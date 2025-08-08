@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Rooms</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="room-list-container">
+        <header class="room-list-header">
+            <div class="header-top-row">
+                <h1>My Chats</h1>
+                <!-- Buttons for joining and creating rooms -->
+                <div class="header-actions">
+                    <button id="join-room-btn" class="header-button">🔗</button>
+                    <button id="new-room-btn" class="header-button">+</button>
+                </div>
+            </div>
+            <input type="search" id="search-bar" placeholder="Search my chats...">
+        </header>
+
+        <main class="room-list">
+            <!-- A loading spinner is shown while rooms are being fetched -->
+            <div class="loading-spinner"></div>
+        </main>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
+
+    <!-- setup-data.js is no longer needed with this new architecture -->
+    <!-- You can remove the file and this script tag -->
+    <!-- <script src="setup-data.js"></script> -->
+
+    <!-- Main logic for this page -->
+    <script src="chatrooms.js"></script>
+</body>
+</html>

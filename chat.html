@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Room</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="chat-container">
+        <!-- 
+          Top Bar: Includes a back button, the room title (which is clickable to show the ID),
+          and a button to delete the room.
+        -->
+        <header class="chat-header">
+            <a href="chatrooms.html" class="back-button">&lt;</a>
+            <div class="room-info">
+                <h1 class="room-title">Loading...</h1>
+            </div>
+            <button id="delete-room-btn" class="header-button danger" title="Delete Room">🗑️</button>
+        </header>
+
+        <!-- 
+          Chat Area: This is a scrollable container where all messages
+          will be dynamically loaded by chat.js.
+        -->
+        <main class="chat-messages">
+            <!-- Messages will appear here -->
+        </main>
+
+        <!-- 
+          Input Form: Contains all the controls for sending new messages.
+        -->
+        <form class="chat-input-area">
+            <!-- Hidden input specifically for selecting IMAGE files -->
+            <input type="file" id="image-input" accept="image/*" style="display: none;">
+            
+            <!-- Hidden input for selecting ANY OTHER type of file -->
+            <input type="file" id="file-input" style="display: none;">
+
+            <!-- Button to trigger the image file selector -->
+            <button type="button" class="attach-button" id="image-attach-btn" title="Send Image">🖼️</button>
+            
+            <!-- Button to trigger the generic file selector -->
+            <button type="button" class="attach-button" id="file-attach-btn" title="Send File">📎</button>
+            
+            <!-- The main text input field -->
+            <input type="text" class="message-input" placeholder="Type a message...">
+            
+            <!-- The final send button -->
+            <button type="submit" class="send-button">Send</button>
+        </form>
+    </div>
+
+    <!-- 
+      Firebase SDKs: These scripts provide the necessary Firebase functionality
+      for Authentication, Firestore Database, and Storage.
+    -->
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-storage-compat.js"></script>
+
+    <!-- Main logic for this page -->
+    <script src="chat.js"></script>
+</body>
+</html>

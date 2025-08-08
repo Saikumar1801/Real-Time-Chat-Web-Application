@@ -1,0 +1,469 @@
+/* --- BASIC RESET & BODY --- */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: #f0f2f5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* --- CHAT SCREEN (`chat.html`) STYLES --- */
+.chat-container {
+    width: 100%;
+    max-width: 800px;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.chat-header {
+    background-color: #f8f8f8;
+    padding: 10px 15px;
+    border-bottom: 1px solid #e7e7e7;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-shrink: 0;
+}
+
+.back-button {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #007aff;
+    text-decoration: none;
+    padding-bottom: 4px;
+}
+
+.room-title {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.chat-messages {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 20px 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background-color: #e5ddd5;
+}
+
+.message {
+    display: flex;
+    flex-direction: column;
+    max-width: 70%;
+    padding: 10px 15px;
+    border-radius: 18px;
+    word-wrap: break-word;
+}
+
+.message-text {
+    font-size: 16px;
+    line-height: 1.4;
+}
+
+.message-timestamp {
+    font-size: 11px;
+    color: #8e8e93;
+    margin-top: 5px;
+    align-self: flex-end;
+}
+
+.message.received {
+    background-color: #ffffff;
+    align-self: flex-start;
+    border-bottom-left-radius: 4px;
+}
+
+.message.sent {
+    background-color: #dcf8c6;
+    align-self: flex-end;
+    border-bottom-right-radius: 4px;
+}
+
+.message.sent .message-timestamp {
+    color: hsla(0, 0%, 36%, 0.6);
+}
+
+.message.error {
+    background-color: #fcd5d5;
+    color: #c72e2e;
+}
+
+.message.error .message-timestamp {
+    color: #c72e2e;
+}
+
+.chat-input-area {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    background-color: #f8f8f8;
+    border-top: 1px solid #e7e7e7;
+    flex-shrink: 0;
+}
+
+.message-input {
+    flex-grow: 1;
+    border: 1px solid #ccc;
+    border-radius: 18px;
+    padding: 10px 15px;
+    font-size: 16px;
+    outline: none;
+}
+
+.send-button {
+    margin-left: 10px;
+    border: none;
+    background-color: #007aff;
+    color: white;
+    font-weight: 600;
+    padding: 0 20px;
+    height: 40px;
+    border-radius: 18px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+/* --- IMAGE UPLOAD (`chat.js`) STYLES --- */
+.attach-button {
+    margin-right: 10px;
+    border: none;
+    background: none;
+    font-size: 28px;
+    font-weight: 300;
+    color: #007aff;
+    cursor: pointer;
+    padding: 0 10px;
+}
+
+.message .message-image {
+    max-width: 100%;
+    border-radius: 12px;
+    margin-top: 5px;
+    cursor: pointer;
+}
+
+.progress-bar-container {
+    width: 100%;
+    height: 8px;
+    background-color: #e0e0e0;
+    border-radius: 4px;
+    margin-top: 5px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    width: 0%;
+    height: 100%;
+    background-color: #4caf50;
+    transition: width 0.2s;
+}
+
+/* --- CHATROOM LIST (`chatrooms.html`) STYLES --- */
+.room-list-container {
+    width: 100%;
+    max-width: 800px;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.room-list-header {
+    padding: 15px;
+    background-color: #f8f8f8;
+    border-bottom: 1px solid #e7e7e7;
+    flex-shrink: 0;
+}
+
+.room-list-header h1 {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+#search-bar {
+    width: 100%;
+    padding: 10px 15px;
+    border-radius: 18px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+}
+
+.room-list {
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+.room-item {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    border-bottom: 1px solid #e7e7e7;
+    text-decoration: none;
+    color: inherit;
+    gap: 15px;
+    position: relative;
+}
+
+.room-item:hover {
+    background-color: #f5f5f5;
+}
+
+.room-details {
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+.room-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.room-item-title {
+    font-size: 17px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.room-item-timestamp {
+    font-size: 13px;
+    color: #8e8e93;
+    flex-shrink: 0;
+}
+
+.room-item-preview {
+    font-size: 15px;
+    color: #8e8e93;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.unread-badge {
+    background-color: #007aff;
+    color: white;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 12px;
+    margin-left: auto;
+    margin-right: 10px;
+}
+
+.mute-button {
+    background: #ccc;
+    border: none;
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 16px;
+    flex-shrink: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.mute-button.muted {
+    background: #ff3b30;
+}
+
+.loading-spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #007aff;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 40px auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* --- RESPONSIVENESS (Media Queries) --- */
+@media (max-width: 800px) {
+    body {
+        background-color: #fff;
+    }
+    
+    .chat-container, .room-list-container {
+        border-radius: 0;
+        height: 100svh;
+        max-width: 100%;
+    }
+
+    .message {
+        max-width: 80%;
+    }
+}/* --- STYLES FOR NEW/DELETE BUTTONS --- */
+
+.room-list-header .header-top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.header-button {
+    background-color: #007aff;
+    color: white;
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    font-size: 24px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    line-height: 1;
+}
+
+.header-button:hover {
+    background-color: #0056b3;
+}
+
+/* Make the delete button stand out */
+.chat-header {
+    justify-content: space-between; /* Allow delete button to go to the right */
+}
+
+.chat-header .room-info {
+    flex-grow: 1;
+    margin-left: 15px;
+}
+
+.header-button.danger {
+    background-color: #ff3b30;
+}
+
+.header-button.danger:hover {
+    background-color: #c72e2e;
+}
+/* --- STYLES FOR ROOM ID SHARING --- */
+
+/* Make the room title in the chat header look clickable */
+.chat-header .room-info {
+    cursor: pointer;
+    border-radius: 8px;
+    padding: 4px 8px;
+    transition: background-color 0.2s;
+}
+
+.chat-header .room-info:hover {
+    background-color: #e0e0e0;
+}
+
+/* Style for the small room ID text below the title */
+.room-id-display {
+    font-size: 11px;
+    color: #8e8e93;
+    font-family: 'Courier New', Courier, monospace;
+    margin-top: 2px;
+}
+/* In style.css */
+.forward-btn {
+    position: absolute;
+    top: -8px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    font-size: 14px;
+    display: none; /* Hidden by default */
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.message:hover .forward-btn {
+    display: flex; /* Show on hover */
+}
+
+.message.sent .forward-btn {
+    left: -12px;
+}
+
+.message.received .forward-btn {
+    right: -12px;
+}
+/* --- STYLES FOR FILE & FORWARDING --- */
+
+/* Make the file message bubble look different */
+.message a.file-link {
+    display: inline-block;
+    background-color: #f0f2f5;
+    padding: 10px 15px;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #007aff;
+    font-weight: 500;
+    word-break: break-all;
+}
+
+.message a.file-link:hover {
+    background-color: #e5e7eb;
+}
+
+/* Style for forwarded text messages */
+.forwarded-text-quote {
+    border-left: 3px solid #ccc;
+    padding-left: 8px;
+    margin-top: 4px;
+    font-style: italic;
+    color: #555;
+}
+
+/* Adjust the attach buttons */
+.attach-button {
+    font-size: 20px; /* Adjust size for emojis */
+    margin: 0;
+    padding: 0 8px;
+    background: none;
+}
+/* In style.css */
+/* --- READ RECEIPT (TICK) STYLES --- */
+.message .message-timestamp::after {
+    display: inline-block;
+    margin-left: 5px;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+/* Single tick for sent, but not read by all */
+.message.sent.delivered .message-timestamp::after {
+    content: '✓';
+    color: #8e8e93; /* Gray tick */
+}
+
+/* Double tick for read by all */
+.message.sent.read-by-all .message-timestamp::after {
+    content: '✓✓';
+    color: #4fc3f7; /* Blue ticks */
+}
