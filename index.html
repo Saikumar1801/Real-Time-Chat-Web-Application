@@ -1,12 +1,168 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>Redirecting...</title>
-    <!-- This line will redirect the user to the chatrooms page immediately -->
-    <meta http-equiv="refresh" content="0; url=chatrooms.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>웹 채팅</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .request-actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .accept-request {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .reject-request {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .empty-requests {
+            text-align: center;
+            padding: 10px;
+            color: #888;
+        }
+        
+        #admin-controls {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+        
+        #admin-controls button {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+    </style>
 </head>
 <body>
-    <p>If you are not redirected automatically, follow this <a href="chatrooms.html">link to the chatrooms</a>.</p>
+    <div class="app-container">
+        <aside class="sidebar">
+            <header class="sidebar-header">
+                <div class="header-top-row">
+                    <div class="header-profile-area">
+                        <button id="profile-btn" class="profile-button" title="내 프로필 보기">👤</button>
+                        <h1>내 채팅</h1>
+                    </div>
+                    <div class="header-actions">
+                        <button id="private-chat-btn" class="header-button" title="1:1 채팅 시작">👤+</button>
+                        <button id="join-room-btn" class="header-button" title="ID로 그룹 참여">🔗</button>
+                        <button id="new-room-btn" class="header-button" title="새 그룹 생성">+</button>
+                    </div>
+                </div>
+                <input type="search" id="search-bar" placeholder="채팅방 검색...">
+            </header>
+            <main class="room-list">
+                <div class="loading-spinner"></div>
+            </main>
+        </aside>
+
+        <main class="chat-area">
+            <div class="chat-placeholder">
+                <h2>채팅을 시작하세요</h2>
+                <p>왼쪽 목록에서 채팅을 선택해주세요.</p>
+            </div>
+            <div class="chat-view" style="display: none;">
+                <header class="chat-header">
+                    <button class="back-button mobile-only">&lt;</button>
+                    <div class="room-info" title="채팅방 정보 보기"><h1 class="room-title"></h1></div>
+                    <button id="delete-room-btn" class="header-button danger" title="채팅방 나가기">🚪</button>
+                </header>
+                <section class="chat-messages"></section>
+                <form class="chat-input-area">
+                    <input type="file" id="image-input" accept="image/*" style="display: none;">
+                    <input type="file" id="file-input" style="display: none;">
+                    <button type="button" class="attach-button" id="image-attach-btn" title="사진 보내기">🖼️</button>
+                    <button type="button" class="attach-button" id="file-attach-btn" title="파일 보내기">📎</button>
+                    <input type="text" class="message-input" placeholder="메시지 입력...">
+                    <button type="submit" class="send-button">전송</button>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div id="participant-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <button id="modal-close-btn" class="modal-close-btn">&times;</button>
+            <h2 id="modal-title"></h2>
+            <div id="modal-room-id-container" class="modal-info-box" style="display: none;">
+                <span class="modal-info-label">채팅방 ID</span>
+                <div class="copyable-id-wrapper">
+                    <span id="modal-room-id-text"></span>
+                    <button id="modal-room-id-copy-btn" class="copy-button" title="ID 복사">📄</button>
+                </div>
+            </div>
+            <div id="participant-list" class="participant-list"></div>
+            
+            <!-- Admin Controls -->
+            <div id="admin-controls" style="display: none;">
+                <h3>관리자 설정</h3>
+                <button id="edit-room-btn" class="modal-button">채팅방 이름 변경</button>
+                <button id="admin-delete-room-btn" class="modal-button danger">채팅방 삭제</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="custom-prompt-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h2 id="custom-prompt-title"></h2>
+            <p id="custom-prompt-text"></p>
+            <input type="text" id="custom-prompt-input" style="display: none;">
+            <div class="modal-actions">
+                <button id="custom-prompt-cancel" class="modal-button secondary">취소</button>
+                <button id="custom-prompt-ok" class="modal-button primary">확인</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="edit-message-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <button id="edit-modal-close-btn" class="modal-close-btn">&times;</button>
+            <h2>메시지 수정</h2>
+            <form id="edit-message-form">
+                <textarea id="edit-message-input" rows="4" required></textarea>
+                <div class="modal-actions">
+                    <button type="button" id="edit-message-cancel" class="modal-button secondary">취소</button>
+                    <button type="submit" class="modal-button primary">저장</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-messaging-compat.js"></script>
+
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/firebase-messaging-sw.js')
+                .then(registration => {
+                    console.log('Service Worker registered');
+                })
+                .catch(error => {
+                    console.error('Service Worker registration failed:', error);
+                });
+        }
+    </script>
+
+    <!-- Main Application Logic -->
+    <script src="app.js"></script>
 </body>
 </html>
