@@ -1,11 +1,10 @@
 const firebaseConfig = {
-    apiKey: "AIzaSyCkXiKhWwx_W29ZFU8mmB-eecFHt1WZCX4",
-    authDomain: "chat-app-6194f.firebaseapp.com",
-    projectId: "chat-app-6194f",
-    storageBucket: "chat-app-6194f.appspot.com",
-    messagingSenderId: "432201991680",
-    appId: "1:432201991680:web:96ac04f905881f5332fae5",
-    measurementId: "G-5MG6QESZ5K"
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_AUTH_DOMAIN",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_STORAGE_BUCKET",
+  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+  appId: "YOUR_APP_ID"
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -54,4 +53,5 @@ nameForm.addEventListener('submit', async (e) => {
         console.error("프로필 업데이트 오류:", error);
         errorDiv.textContent = "이름 저장 실패. 다시 시도해주세요.";
     }
+
 });
