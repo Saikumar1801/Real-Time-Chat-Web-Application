@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회원가입 - 웹 채팅</title>
+    <link rel="stylesheet" href="auth-style.css">
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-storage.js"></script>
+</head>
+<body>
+    <div class="auth-container">
+        <!-- Background Elements -->
+        <div class="background-decoration">
+            <div class="shape shape-1"></div>
+            <div class="shape shape-2"></div>
+            <div class="shape shape-3"></div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="auth-wrapper">
+            <!-- Left Side - Branding -->
+            <div class="auth-brand-section">
+                <div class="brand-content">
+                    <div class="app-logo">
+                        <div class="logo-icon">💬</div>
+                        <h1 class="app-title">웹 채팅</h1>
+                    </div>
+                    <h2 class="welcome-title">새로운 시작을 환영합니다!</h2>
+                    <p class="welcome-subtitle">지금 가입하고 친구들과 소통하세요</p>
+                    <div class="signup-benefits">
+                        <div class="benefit-item">
+                            <span class="benefit-icon">🎉</span>
+                            <div>
+                                <h4>무료로 시작</h4>
+                                <p>모든 기능을 무료로 이용하세요</p>
+                            </div>
+                        </div>
+                        <div class="benefit-item">
+                            <span class="benefit-icon">⚡</span>
+                            <div>
+                                <h4>빠른 설정</h4>
+                                <p>1분 만에 계정을 만들 수 있어요</p>
+                            </div>
+                        </div>
+                        <div class="benefit-item">
+                            <span class="benefit-icon">🔐</span>
+                            <div>
+                                <h4>안전한 보안</h4>
+                                <p>개인정보가 안전하게 보호됩니다</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side - Signup Form -->
+            <div class="auth-form-section">
+                <div class="form-container">
+                    <div class="form-header">
+                        <h2 class="form-title">회원가입</h2>
+                        <p class="form-subtitle">새로운 계정을 만들어보세요</p>
+                    </div>
+
+                    <form id="signup-form" class="auth-form">
+                        <!-- Profile Photo Section -->
+                        <div class="photo-upload-section">
+                            <div class="photo-upload-wrapper">
+                                <div class="photo-preview-container">
+                                    <img 
+                                        id="photo-preview" 
+                                        class="photo-preview" 
+                                        src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIGZpbGw9Im5vbmUiIHZpZXdCb3g9IjAgMCA4MCA4MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iNDAiIGN5PSI0MCIgcj0iNDAiIGZpbGw9IiNmM2Y0ZjYiLz4KPGM++PC9zdmc+Cg=="
+                                        alt="프로필 사진 미리보기"
+                                    >
+                                    <div class="photo-upload-overlay">
+                                        <span class="upload-icon">📷</span>
+                                        <span class="upload-text">사진 추가</span>
+                                    </div>
+                                </div>
+                                <input 
+                                    type="file" 
+                                    id="photo-input" 
+                                    class="photo-input" 
+                                    accept="image/*"
+                                    hidden
+                                >
+                            </div>
+                            <div class="photo-url-option">
+                                <div class="form-group">
+                                    <label for="photo-url-input" class="form-label">또는 이미지 URL 입력</label>
+                                    <input 
+                                        type="url" 
+                                        id="photo-url-input" 
+                                        class="form-input" 
+                                        placeholder="https://example.com/image.jpg"
+                                    >
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Form Fields -->
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="name-input" class="form-label">이름 *</label>
+                                <div class="input-wrapper">
+                                    <input 
+                                        type="text" 
+                                        id="name-input" 
+                                        class="form-input" 
+                                        placeholder="표시될 이름을 입력하세요"
+                                        required
+                                        minlength="2"
+                                        maxlength="20"
+                                    >
+                                    <span class="input-icon">👤</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email-input" class="form-label">이메일 *</label>
+                            <div class="input-wrapper">
+                                <input 
+                                    type="email" 
+                                    id="email-input" 
+                                    class="form-input" 
+                                    placeholder="your@email.com"
+                                    required
+                                >
+                                <span class="input-icon">📧</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="phone-input" class="form-label">전화번호 (선택)</label>
+                            <div class="input-wrapper">
+                                <input 
+                                    type="tel" 
+                                    id="phone-input" 
+                                    class="form-input" 
+                                    placeholder="010-1234-5678"
+                                >
+                                <span class="input-icon">📞</span>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="password-input" class="form-label">비밀번호 *</label>
+                                <div class="input-wrapper">
+                                    <input 
+                                        type="password" 
+                                        id="password-input" 
+                                        class="form-input" 
+                                        placeholder="비밀번호를 입력하세요"
+                                        required
+                                        minlength="6"
+                                    >
+                                    <span class="input-icon">🔒</span>
+                                    <button type="button" class="password-toggle" id="password-toggle-1">
+                                        <span class="toggle-icon">👁️</span>
+                                    </button>
+                                </div>
+                                <div class="password-strength" id="password-strength">
+                                    <div class="strength-bar">
+                                        <div class="strength-fill"></div>
+                                    </div>
+                                    <span class="strength-text">비밀번호 강도: 약함</span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="confirm-password-input" class="form-label">비밀번호 확인 *</label>
+                                <div class="input-wrapper">
+                                    <input 
+                                        type="password" 
+                                        id="confirm-password-input" 
+                                        class="form-input" 
+                                        placeholder="비밀번호를 다시 입력하세요"
+                                        required
+                                        minlength="6"
+                                    >
+                                    <span class="input-icon">🔒</span>
+                                    <button type="button" class="password-toggle" id="password-toggle-2">
+                                        <span class="toggle-icon">👁️</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="checkbox-wrapper">
+                                <input type="checkbox" id="terms-agreement" required>
+                                <span class="checkbox-custom"></span>
+                                <span class="checkbox-label">
+                                    <a href="#" class="terms-link">이용약관</a> 및 
+                                    <a href="#" class="terms-link">개인정보처리방침</a>에 동의합니다
+                                </span>
+                            </label>
+                        </div>
+
+                        <button type="submit" class="btn-primary">
+                            <span class="btn-text">계정 만들기</span>
+                            <div class="btn-loader hidden">
+                                <div class="spinner"></div>
+                            </div>
+                        </button>
+
+                        <div id="auth-error" class="error-message"></div>
+                    </form>
+
+                    <!-- Bottom Links -->
+                    <div class="auth-footer">
+                        <p class="auth-link-text">
+                            이미 계정이 있으신가요?
+                            <a href="login.html" class="auth-link">로그인</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="signup.js"></script>
+</body>
+</html>

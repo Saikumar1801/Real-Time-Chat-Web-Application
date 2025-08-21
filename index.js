@@ -16,18 +16,40 @@ exports.sendChatNotification = functions.firestore
     
     const roomData = roomDoc.data();
     const participants = roomData.participantIds;
-    const recipients = participants.filter(id => id !== message.senderId);
+    let recipients = participants.filter(id => id !== message.senderId);
     
     if (recipients.length === 0) return;
 
-    // Get FCM tokens
-    const tokens = [];
-    for (const userId of recipients) {
-        const userDoc = await db.collection('users').doc(userId).get();
-        if (userDoc.exists && userDoc.data().fcmToken) {
-            tokens.push(userDoc.data().fcmToken);
-        }
+    // ✅ Check for blocked users before sending notifications
+    try {
+        const recipientDocs = await db.collection('users').where(admin.firestore.FieldPath.documentId(), 'in', recipients).get();
+        const validRecipients = [];
+        recipientDocs.forEach(doc => {
+            const userData = doc.data();
+            // If the recipient has NOT blocked the sender, add them to the list
+            if (!userData.blockedUsers || !userData.blockedUsers.includes(message.senderId)) {
+                validRecipients.push(doc.id);
+            }
+        });
+        recipients = validRecipients;
+    } catch(e) {
+        console.error("Error checking for blocked users:", e);
     }
+    
+    if (recipients.length === 0) return;
+
+    // Get FCM tokens in a batch
+    const tokensSnapshot = await db.collection('users')
+        .where(admin.firestore.FieldPath.documentId(), 'in', recipients)
+        .get();
+
+    const tokens = [];
+    tokensSnapshot.forEach(doc => {
+        const userData = doc.data();
+        if (userData.fcmToken) {
+            tokens.push(userData.fcmToken);
+        }
+    });
 
     if (tokens.length === 0) return;
     
@@ -46,7 +68,7 @@ exports.sendChatNotification = functions.firestore
         title: notificationTitle,
         body: body,
         icon: "/favicon.ico",
-        click_action: `https://YOUR_DOMAIN.com/?room=${roomId}`
+        click_action: `https://YOUR_DOMAIN.com/?room=${roomId}` // Replace with your actual domain
       },
       data: {
         roomId: roomId
@@ -75,7 +97,7 @@ exports.notifyJoinRequest = functions.firestore
         title: '새 가입 요청',
         body: `${request.userName}님이 "${request.roomName}" 그룹에 가입을 요청했습니다`,
         icon: "/favicon.ico",
-        click_action: `https://YOUR_DOMAIN.com/?room=${request.roomId}`
+        click_action: `https://YOUR_DOMAIN.com/?room=${request.roomId}` // Replace with your actual domain
       },
       data: {
         roomId: request.roomId,
@@ -84,7 +106,7 @@ exports.notifyJoinRequest = functions.firestore
     };
 
     try {
-        await admin.messaging().sendToDevice(adminDoc.data().fcmToken, payload);
+        await admin.messaging().sendToDevice([adminDoc.data().fcmToken], payload);
     } catch (error) {
         console.error("알림 전송 실패:", error);
     }
