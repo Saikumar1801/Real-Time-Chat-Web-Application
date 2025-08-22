@@ -1,5 +1,3 @@
-
-
 window.addEventListener('DOMContentLoaded', () => {
     // --- Firebase Configuration ---
 const firebaseConfig = {
@@ -766,7 +764,7 @@ const firebaseConfig = {
         
         let receiptHTML = '';
         if (isSent) {
-            let statusIcon = msg.status === 'sending' ? '🕒' : '✓';
+            let statusIcon = msg.status === 'sending' ? '🕒' : '';
             let statusClass = msg.status === 'sending' ? 'sending' : 'sent';
             receiptHTML = `<span class="read-receipt ${statusClass}">${statusIcon}</span>`;
         }
@@ -963,7 +961,6 @@ const firebaseConfig = {
         const total = room.participantIds.length;
         const readCount = msgData.readBy?.length || 0;
         receipt.className = 'read-receipt';
-        receipt.innerHTML = '✓✓';
         if (readCount >= total) {
             receipt.classList.add('read-by-all');
         } else {
