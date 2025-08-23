@@ -1,0 +1,188 @@
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // --- HELPER FUNCTIONS ---
+
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuth() && request.auth.uid == userId;
+    }
+    
+    // Source of truth for room participation. Checks the user's private list.
+    function isParticipantInPrivateList(roomId) {
+        return isAuth() && exists(/databases/$(database)/documents/users/$(request.auth.uid)/rooms/$(roomId));
+    }
+
+    // Checks if the requesting user has an 'admin' role in a room.
+    function isRoomAdmin(roomId) {
+      return isParticipantInPrivateList(roomId) &&
+             exists(/databases/$(database)/documents/chatrooms/$(roomId)/members/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/chatrooms/$(roomId)/members/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Checks if a room is being created in the current transaction by the authenticated user.
+    function isCreatingNewRoom(roomId) {
+        return !exists(/databases/$(database)/documents/chatrooms/$(roomId)) &&
+               getAfter(/databases/$(database)/documents/chatrooms/$(roomId)).data.createdBy == request.auth.uid;
+    }
+    
+    // Checks if the initiator of a new private chat is adding the other participant.
+    function isCreatingValidPrivateChatWith(targetUserId, roomId) {
+        let chat = getAfter(/databases/$(database)/documents/chatrooms/$(roomId)).data;
+        return isAuth() && request.auth.uid != targetUserId &&
+               isCreatingNewRoom(roomId) &&
+               chat.type == 'private' &&
+               chat.participantIds.size() == 2 &&
+               chat.participantIds.hasAll([request.auth.uid, targetUserId]);
+    }
+
+    // Checks if a specific user is being added to a room's participant list in a transaction.
+    function userIsBeingAdded(userId, roomId) {
+        let roomExistsBefore = exists(/databases/$(database)/documents/chatrooms/$(roomId));
+        let userIsParticipantAfter = getAfter(/databases/$(database)/documents/chatrooms/$(roomId)).data.participantIds.hasAny([userId]);
+
+        let addedToNewRoom = !roomExistsBefore && userIsParticipantAfter;
+        let addedToExistingRoom = roomExistsBefore &&
+                                  !get(/databases/$(database)/documents/chatrooms/$(roomId)).data.participantIds.hasAny([userId]) &&
+                                  userIsParticipantAfter;
+
+        return addedToNewRoom || addedToExistingRoom;
+    }
+    
+    // Checks if the authenticated user is joining a group (e.g., accepting an invite).
+    function isJoiningGroup(roomId) {
+        return isAuth() && userIsBeingAdded(request.auth.uid, roomId);
+    }
+    
+    // Checks if an admin is adding a member to a group, and only participant fields are changing.
+    function isAdminAddingMember(roomId) {
+        let pIdsBefore = resource.data.participantIds;
+        let pIdsAfter = request.resource.data.participantIds;
+        let idsAdded = pIdsAfter.removeAll(pIdsBefore);
+
+        let allowedKeys = ['participantIds', 'participantNames', 'participantAvatars'];
+        let onlyParticipantKeysChanged = request.resource.data.diff(resource.data).affectedKeys().hasOnly(allowedKeys);
+
+        return isRoomAdmin(roomId) &&
+               onlyParticipantKeysChanged &&
+               idsAdded.size() == 1;
+    }
+    
+    // Checks if a user is leaving or being removed from a group.
+    function isLeavingOrBeingRemoved(roomId) {
+      let removedIds = resource.data.participantIds.removeAll(request.resource.data.participantIds);
+      return (
+        (isParticipantInPrivateList(roomId) && removedIds.size() == 1 && removedIds.hasAny([request.auth.uid])) ||
+        (isRoomAdmin(roomId) && removedIds.size() == 1 && !removedIds.hasAny([request.auth.uid]))
+      );
+    }
+    
+    // Allows a user to check for a potential private chat room involving them before it exists.
+    function isPotentialPrivateChatParticipant(roomId) {
+      let parts = roomId.split('_');
+      return isAuth() && parts.size() == 2 && (parts[0] == request.auth.uid || parts[1] == request.auth.uid);
+    }
+
+    // --- USERS ---
+    match /users/{userId} {
+      allow read: if isAuth();
+      allow create, update: if isOwner(userId);
+      
+      // A private list of rooms a user has joined.
+      match /rooms/{roomId} {
+        allow read: if isOwner(userId);
+        
+        allow create: if (isOwner(userId) && userIsBeingAdded(userId, roomId)) ||
+                         (isRoomAdmin(roomId) && userIsBeingAdded(userId, roomId)) ||
+                         (isCreatingValidPrivateChatWith(userId, roomId));
+                         
+        allow update: if isParticipantInPrivateList(roomId) && 
+                         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['unreadCount']);
+
+        allow delete: if isOwner(userId) || isRoomAdmin(roomId);
+      }
+    }
+    
+    // --- CHATROOMS ---
+    match /chatrooms/{roomId} {
+      // READ rules: Allow reading own rooms, public groups, or potential private chats.
+      allow get: if isParticipantInPrivateList(roomId) || 
+                    (isAuth() && exists(/databases/$(database)/documents/chatrooms/$(roomId)) && get(/databases/$(database)/documents/chatrooms/$(roomId)).data.type == 'group') ||
+                    isPotentialPrivateChatParticipant(roomId);
+      allow list: if isParticipantInPrivateList(roomId);
+      
+      allow create: if isAuth() && request.resource.data.createdBy == request.auth.uid;
+      allow delete: if isRoomAdmin(roomId) && resource.data.type == 'group';
+      
+      // UPDATE rules covering various scenarios.
+      allow update: if 
+          // Scenario 1: Any participant updating the last message.
+          (isParticipantInPrivateList(roomId) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastMessage'])) ||
+          // Scenario 2: Any participant updating their OWN propagated profile info.
+          (isParticipantInPrivateList(roomId) && 
+              request.resource.data.participantNames.diff(resource.data.participantNames).affectedKeys().hasOnly([request.auth.uid]) &&
+              request.resource.data.participantAvatars.diff(resource.data.participantAvatars).affectedKeys().hasOnly([request.auth.uid])) ||
+          // Scenario 3: An admin updating room details.
+          (isRoomAdmin(roomId) && request.resource.data.diff(resource.data).affectedKeys().hasAny(['title', 'photoUrl', 'pinnedMessage'])) ||
+          // Scenario 4: A user joining a group themselves (e.g., accepting invite).
+          (isJoiningGroup(roomId)) ||
+          // Scenario 5: An admin adding a new member to the group (e.g. accepting join request).
+          (isAdminAddingMember(roomId)) ||
+          // Scenario 6: A user leaving a group OR an admin removing a user.
+          (isLeavingOrBeingRemoved(roomId));
+          
+      // --- SUBCOLLECTIONS of chatrooms ---
+      match /messages/{messageId} {
+        allow list, read: if isParticipantInPrivateList(roomId);
+        allow create: if isParticipantInPrivateList(roomId) && request.resource.data.senderId == request.auth.uid;
+        allow update: if 
+            (request.resource.data.senderId == request.auth.uid && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['text', 'isEdited'])) ||
+            (isParticipantInPrivateList(roomId) && request.resource.data.diff(resource.data).affectedKeys().hasAny(['reactions', 'readBy']));
+        allow delete: if (resource.data.senderId == request.auth.uid || isRoomAdmin(roomId));
+      }
+      
+      match /members/{userId} {
+        allow read: if isParticipantInPrivateList(roomId);
+        allow create: if 
+            (isOwner(userId) && isCreatingNewRoom(roomId) && request.resource.data.role == 'admin') ||
+            (isOwner(userId) && userIsBeingAdded(userId, roomId) && request.resource.data.role == 'member') ||
+            (isRoomAdmin(roomId) && userIsBeingAdded(userId, roomId) && request.resource.data.role == 'member');
+        allow update: if isRoomAdmin(roomId) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['role']);
+        allow delete: if isRoomAdmin(roomId) || isOwner(userId);
+      }
+    }
+    
+    // --- OTHER TOP-LEVEL COLLECTIONS ---
+    match /presence/{userId} {
+      allow read: if isAuth();
+      allow write: if isOwner(userId);
+    }
+    match /typing/{roomId}/users/{userId} {
+      allow list, read: if isParticipantInPrivateList(roomId);
+      allow create, delete: if isOwner(userId) && isParticipantInPrivateList(roomId);
+    }
+    match /joinRequests/{requestId} {
+      allow read: if isAuth() && (resource.data.userId == request.auth.uid || resource.data.adminId == request.auth.uid);
+      allow create: if isAuth() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAuth() && resource.data.adminId == request.auth.uid && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']);
+    }
+    match /invitations/{invitationId} {
+      allow read: if isAuth() && (resource.data.userId == request.auth.uid || resource.data.invitedBy == request.auth.uid);
+      allow create: if isAuth() && request.resource.data.invitedBy == request.auth.uid && (
+                      isRoomAdmin(request.resource.data.roomId) || 
+                      isCreatingNewRoom(request.resource.data.roomId)
+                    );
+      allow update: if isAuth() && resource.data.userId == request.auth.uid &&
+                     request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']);
+    }
+    match /mutes/{userId}/{subpath=**} { allow read, write: if isOwner(userId); }
+    match /pinnedRooms/{userId}/{subpath=**} { allow read, write: if isOwner(userId); }
+    match /reads/{userId}/{subpath=**} { allow read, write: if isOwner(userId); }
+  }
+}

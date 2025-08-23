@@ -180,7 +180,22 @@ body.dark-mode .room-item-content.active .room-item-timestamp, body.dark-mode .r
 .room-item-preview { font-size: 14px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* --- UNREAD BADGE --- */
-.unread-badge { background-color: var(--accent-primary); width: 20px; height: 20px; border-radius: 50%; margin-left: auto; align-self: center; flex-shrink: 0; }
+.unread-badge {
+    background-color: var(--accent-primary);
+    min-width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    padding: 0 6px;
+    margin-left: auto;
+    align-self: center;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-on-accent);
+}
 
 /* --- RIGHT PANE: CHAT AREA --- */
 .chat-area { flex-grow: 1; display: flex; flex-direction: column; background-color: var(--bg-chat-area-light); background-image: var(--bg-chat-texture); }
@@ -235,16 +250,43 @@ body.dark-mode .message.sent .message-meta {
 .message-timestamp { font-size: 11px; }
 
 /* MESSAGE STATUS INDICATORS */
-.read-receipt { font-weight: bold; font-size: 16px; line-height: 1; }
-.read-receipt::after { display: inline-block; }
-.read-receipt.sent { color: var(--text-secondary); }
-.read-receipt.sent::after { content: '✓'; }
-.read-receipt.delivered { color: var(--text-secondary); }
-.read-receipt.delivered::after { content: '✓✓'; }
-.read-receipt.read-by-all { color: #4fc3f7; }
-.read-receipt.read-by-all::after { content: '✓✓'; }
-.read-receipt.failed { color: var(--accent-danger); font-size: 14px; }
+.read-receipt {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    vertical-align: middle;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+}
+.read-receipt.sending, .read-receipt.failed {
+    font-weight: bold;
+    font-size: 16px;
+    line-height: 1;
+    text-align: center;
+}
+.read-receipt.failed { color: var(--accent-danger); }
 .retry-button { margin-left: 8px !important; padding: 2px 8px !important; font-size: 12px !important; line-height: 1.4 !important; min-width: auto !important; }
+
+/* Light Theme Ticks */
+.read-receipt.receipt-sent {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%235c626b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E");
+}
+.read-receipt.receipt-delivered {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%235c626b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3Cpath d='m15 6-9 9-4-4'/%3E%3C/svg%3E");
+}
+.read-receipt.receipt-read {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%234fc3f7' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3Cpath d='m15 6-9 9-4-4'/%3E%3C/svg%3E");
+}
+
+/* Dark Theme Ticks */
+body.dark-mode .read-receipt.receipt-sent {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23949ba4' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E");
+}
+body.dark-mode .read-receipt.receipt-delivered {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23949ba4' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3Cpath d='m15 6-9 9-4-4'/%3E%3C/svg%3E");
+}
+
 
 /* MESSAGE REPLY & FORWARD STYLES */
 .reply-context { background: rgba(0,0,0,0.05); border-left: 3px solid var(--accent-primary); padding: 5px 8px; margin-bottom: 8px; border-radius: 4px; font-size: 13px; cursor: pointer; }

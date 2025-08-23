@@ -53,8 +53,8 @@ const firebaseConfig = {
         inputForm: document.querySelector('.chat-input-area'), messageInput: document.querySelector('.message-input'),
         sendButton: document.querySelector('.send-button'),
         emojiBtn: document.getElementById('emoji-btn'), emojiPicker: document.getElementById('emoji-picker'),
-        imageAttachBtn: document.getElementById('image-attach-btn'),
-        imageInput: document.getElementById('image-input'),
+        imageAttachBtn: document.getElementById('image-attach-btn'), imageInput: document.getElementById('image-input'),
+        fileAttachBtn: document.getElementById('file-attach-btn'), fileInput: document.getElementById('file-input'),
         backButton: document.querySelector('.back-button.mobile-only'),
         participantModal: document.getElementById('participant-modal'),
         modalTitle: document.getElementById('modal-title'), participantList: document.getElementById('participant-list'),
@@ -218,7 +218,7 @@ const firebaseConfig = {
             request.onupgradeneeded = (event) => {
                 const db = event.target.result;
                 if (!db.objectStoreNames.contains('offlineMessages')) {
-                    db.createObjectStore('offlineMessages', { keyPath: 'id', autoIncrement: true });
+                    db.createObjectStore('offlineMessages', { keyPath: 'id' });
                 }
             };
         });
@@ -231,7 +231,10 @@ const firebaseConfig = {
         store.add(message);
         return new Promise((resolve, reject) => {
             transaction.oncomplete = () => resolve();
-            transaction.onerror = () => reject(transaction.error);
+            transaction.onerror = (e) => {
+                console.error('Failed to save offline message:', e.target.error);
+                reject(transaction.error);
+            }
         });
     }
 
@@ -245,11 +248,28 @@ const firebaseConfig = {
             console.log(`Sending ${messages.length} offline messages...`);
             for (const msg of messages) {
                 try {
-                    await attemptToSend(msg.content, msg.replyContext, true);
+                    const queuedMsgEl = document.getElementById(msg.id);
+                    if (queuedMsgEl && msg.roomId === currentRoomId) {
+                         const receipt = queuedMsgEl.querySelector('.read-receipt');
+                         if(receipt) {
+                            receipt.className = 'read-receipt sending';
+                         }
+                    }
+                    
+                    await sendMessage(msg.content, msg.roomId, msg.replyContext);
+                    
                     const deleteTransaction = offlineDB.transaction(['offlineMessages'], 'readwrite');
                     deleteTransaction.objectStore('offlineMessages').delete(msg.id);
                 } catch (error) {
-                    console.error("Failed to send offline message:", msg, error);
+                    console.error("Failed to send offline message, will retry later:", msg, error);
+                     const failedMsgEl = document.getElementById(msg.id);
+                     if (failedMsgEl) {
+                        const receipt = failedMsgEl.querySelector('.read-receipt');
+                        if(receipt) {
+                            receipt.className = 'read-receipt failed';
+                            receipt.innerHTML = `&#x26A0;`;
+                        }
+                     }
                 }
             }
         }
@@ -261,10 +281,7 @@ const firebaseConfig = {
             const isOffline = !navigator.onLine;
             document.body.classList.toggle('offline', isOffline);
 
-            if (isOffline) {
-                if (dom.sendButton) dom.sendButton.disabled = dom.messageInput.value.trim() === '';
-            } else {
-                if (dom.sendButton) dom.sendButton.disabled = dom.messageInput.value.trim() === '';
+            if (!isOffline) {
                 sendOfflineMessages();
             }
         };
@@ -289,9 +306,10 @@ const firebaseConfig = {
         dom.inputForm.addEventListener('submit', handleSendMessage);
         dom.imageAttachBtn.addEventListener('click', () => dom.imageInput.click());
         dom.imageInput.addEventListener('change', handleImageUpload);
+        dom.fileAttachBtn.addEventListener('click', () => dom.fileInput.click());
+        dom.fileInput.addEventListener('change', handleFileUpload);
         dom.messageInput.addEventListener('input', () => {
-            const isOffline = !navigator.onLine;
-            dom.sendButton.disabled = isOffline ? (dom.messageInput.value.trim() === '') : (dom.messageInput.value.trim() === '');
+            dom.sendButton.disabled = dom.messageInput.value.trim() === '';
             debounce(updateTypingStatus, 500)();
         });
         dom.cancelReplyBtn.addEventListener('click', cancelReply);
@@ -396,7 +414,8 @@ const firebaseConfig = {
         const userRoomsQuery = db.collection('users').doc(currentUser.uid).collection('rooms');
 
         userRoomsUnsubscribe = userRoomsQuery.onSnapshot(async (userRoomsSnapshot) => {
-            const roomIds = userRoomsSnapshot.docs.map(doc => doc.id);
+            const userRoomsMap = new Map(userRoomsSnapshot.docs.map(doc => [doc.id, doc.data()]));
+            const roomIds = Array.from(userRoomsMap.keys());
 
             if (roomIds.length === 0) {
                 roomsDataCache = [];
@@ -407,9 +426,6 @@ const firebaseConfig = {
             try {
                 const roomPromises = roomIds.map(id => db.collection('chatrooms').doc(id).get());
                 const roomDocs = await Promise.all(roomPromises);
-
-                const readsSnapshot = await db.collection('reads').doc(currentUser.uid).collection('rooms').get();
-                const readsMap = new Map(readsSnapshot.docs.map(doc => [doc.id, doc.data().lastReadTimestamp]));
                 
                 const mutesSnapshot = await db.collection('mutes').doc(currentUser.uid).collection('rooms').get();
                 const mutedIds = new Set(mutesSnapshot.docs.map(doc => doc.id));
@@ -421,13 +437,13 @@ const firebaseConfig = {
                     if (!doc.exists) return null;
                     
                     const roomData = doc.data();
-                    const lastRead = readsMap.get(doc.id);
-                    const isUnread = roomData.lastMessage && (!lastRead || roomData.lastMessage.timestamp > lastRead);
+                    const userRoomData = userRoomsMap.get(doc.id) || {};
+                    const unreadCount = userRoomData.unreadCount || 0;
 
                     return { 
                         id: doc.id, 
                         ...roomData, 
-                        isUnread, 
+                        unreadCount, 
                         isMuted: mutedIds.has(doc.id), 
                         isPinned: pinnedIds.has(doc.id) 
                     };
@@ -501,7 +517,7 @@ const firebaseConfig = {
                                 </div>
                                 <div class="room-item-footer">
                                     <span class="room-item-preview">${lastMsgText}</span>
-                                    ${room.isUnread ? '<div class="unread-badge"></div>' : ''}
+                                    ${room.unreadCount > 0 ? `<div class="unread-badge">${room.unreadCount}</div>` : ''}
                                 </div>
                             </div>
                         </div>
@@ -561,7 +577,7 @@ const firebaseConfig = {
         lastMessageDate = null; 
         lastVisibleMessage = null;
         isFetchingMessages = false;
-        db.collection('reads').doc(currentUser.uid).collection('rooms').doc(roomId).set({ lastReadTimestamp: firebase.firestore.FieldValue.serverTimestamp() });
+        db.collection('users').doc(currentUser.uid).collection('rooms').doc(roomId).set({ unreadCount: 0 }, { merge: true });
         dom.chatPlaceholder.style.display = 'none'; 
         dom.chatView.style.display = 'flex';
         dom.chatMessages.innerHTML = '';
@@ -618,18 +634,71 @@ const firebaseConfig = {
     async function toggleMute(roomId) {
         const room = roomsDataCache.find(r => r.id === roomId);
         if (!room) return;
-        const muteRef = db.collection('mutes').doc(currentUser.uid).collection('rooms').doc(roomId);
-        if (room.isMuted) await muteRef.delete();
-        else await muteRef.set({ muted: true });
+    
+        // 1. Optimistically update local state
+        room.isMuted = !room.isMuted;
+        
+        // 2. Update UI immediately
+        const roomItemWrapper = document.querySelector(`.room-item-wrapper[data-room-id="${roomId}"]`);
+        if (roomItemWrapper) {
+            const muteButton = roomItemWrapper.querySelector('.mute-button');
+            if (muteButton) {
+                const muteIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-volume-x"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="22" x2="16" y1="9" y2="15"/><line x1="16" x2="22" y1="9" y2="15"/></svg>`;
+                const unMuteIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-volume-2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>`;
+                
+                muteButton.title = room.isMuted ? 'Unmute' : 'Mute';
+                muteButton.innerHTML = `
+                    ${room.isMuted ? unMuteIcon : muteIcon}
+                    <span>${room.isMuted ? 'Unmute' : 'Mute'}</span>
+                `;
+            }
+        }
+        
         closeSwipedItem();
+    
+        // 3. Perform database operation
+        const muteRef = db.collection('mutes').doc(currentUser.uid).collection('rooms').doc(roomId);
+        try {
+            if (room.isMuted) {
+                await muteRef.set({ muted: true });
+            } else {
+                await muteRef.delete();
+            }
+        } catch (error) {
+            // Revert UI on failure
+            console.error("Failed to update mute status:", error);
+            room.isMuted = !room.isMuted; // Revert local state
+            renderRoomList(roomsDataCache, dom.searchBar.value); // Re-render to be safe
+            showCustomAlert("Error", "Could not update mute status.");
+        }
     }
+    
     async function togglePin(roomId) {
         const room = roomsDataCache.find(r => r.id === roomId);
         if (!room) return;
+    
+        // 1. Optimistically update local state
+        room.isPinned = !room.isPinned;
+    
+        // 2. Re-render the whole list because sort order changes
+        renderRoomList(roomsDataCache, dom.searchBar.value);
+        closeSwipedItem(false); // Close without animation
+    
+        // 3. Perform database operation
         const pinRef = db.collection('pinnedRooms').doc(currentUser.uid).collection('rooms').doc(roomId);
-        if (room.isPinned) await pinRef.delete();
-        else await pinRef.set({ pinnedAt: firebase.firestore.FieldValue.serverTimestamp() });
-        closeSwipedItem();
+        try {
+            if (room.isPinned) {
+                await pinRef.set({ pinnedAt: firebase.firestore.FieldValue.serverTimestamp() });
+            } else {
+                await pinRef.delete();
+            }
+        } catch (error) {
+            // Revert UI on failure
+            console.error("Failed to update pin status:", error);
+            room.isPinned = !room.isPinned; // Revert local state
+            renderRoomList(roomsDataCache, dom.searchBar.value); // Re-render to show correct state
+            showCustomAlert("Error", "Could not update pin status.");
+        }
     }
     
     // --- SWIPE ACTIONS ---
@@ -706,6 +775,8 @@ const firebaseConfig = {
         const query = db.collection('chatrooms').doc(roomId).collection('messages').orderBy('timestamp', 'desc').limit(30);
         messagesUnsubscribe = query.onSnapshot(snapshot => {
             const isInitialLoad = !lastVisibleMessage;
+            let newMessagesForCurrentUser = false;
+
             if (isInitialLoad) {
                 dom.chatMessages.innerHTML = '';
                 lastMessageDate = null;
@@ -715,8 +786,11 @@ const firebaseConfig = {
                     const docId = change.doc.id;
                     const docData = change.doc.data();
                     if (change.type === 'added') {
+                        if (docData.senderId !== currentUser.uid) {
+                            newMessagesForCurrentUser = true;
+                        }
                         const isScrolledToBottom = dom.chatMessages.scrollHeight - dom.chatMessages.clientHeight <= dom.chatMessages.scrollTop + 50;
-                        const tempId = Array.from(dom.chatMessages.querySelectorAll('.message[id^="temp_"]')).find(el => el.dataset.text === docData.text);
+                        const tempId = Array.from(dom.chatMessages.querySelectorAll('.message[id^="temp_"]')).find(el => el.dataset.text === docData.text || el.dataset.file === docData.file?.name);
                         tempId?.closest('.message-wrapper')?.remove();
                         if (!document.getElementById(docId)) displayMessage(docId, docData);
                         if (isScrolledToBottom) scrollToBottom();
@@ -728,7 +802,13 @@ const firebaseConfig = {
             if (!snapshot.empty) lastVisibleMessage = snapshot.docs[snapshot.docs.length - 1];
             else if (isInitialLoad) lastVisibleMessage = null;
             if (isInitialLoad) scrollToBottom();
+            
             markVisibleMessagesAsRead();
+            
+            // If new messages arrived for the current user while they are in the room, reset the count.
+            if (newMessagesForCurrentUser) {
+                db.collection('users').doc(currentUser.uid).collection('rooms').doc(roomId).set({ unreadCount: 0 }, { merge: true }).catch(console.error);
+            }
         });
     }
     function createMessageElement(docId, msg) {
@@ -744,11 +824,22 @@ const firebaseConfig = {
         if (msg.forwardedFrom) contentHTML += `<div class="forwarded-info">↪️ Forwarded message</div>`;
         if (msg.replyTo) contentHTML += `<div class="reply-context" onclick="window.scrollToMessage('${msg.replyTo.messageId}')"><strong>${msg.replyTo.senderName}</strong><p>${msg.replyTo.text}</p></div>`;
         if (msg.base64Image) contentHTML += `<img src="${msg.base64Image}" class="message-image" alt="Image">`;
+        else if (msg.file) {
+            contentHTML += `<a href="${msg.file.dataUrl}" download="${msg.file.name}" class="file-link" target="_blank" rel="noopener noreferrer">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-text"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/></svg>
+                    <div>
+                        <strong>${msg.file.name}</strong>
+                        <small style="display: block;">${(msg.file.size / 1024).toFixed(1)} KB</small>
+                    </div>
+                </div>
+            </a>`;
+        }
         else if (msg.text) contentHTML += `<p class="message-text">${msg.text.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>`;
         const canEdit = isSent && msg.text;
         const canDelete = isSent || currentUserRole === 'admin';
         const canPin = currentUserRole === 'admin';
-        const textForJs = (msg.text || (msg.base64Image ? 'Photo' : 'File')).replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        const textForJs = (msg.text || (msg.base64Image ? 'Photo' : (msg.file ? `File: ${msg.file.name}` : 'File'))).replace(/'/g, "\\'").replace(/"/g, '&quot;');
         
         const reactIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" x2="9.01" y1="9" y2="9"/><line x1="15" x2="15.01" y1="9" y2="9"/></svg>`;
         const replyIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 0 0-4-4H4"/></svg>`;
@@ -760,13 +851,22 @@ const firebaseConfig = {
         const messageDiv = document.createElement('div');
         messageDiv.id = docId;
         messageDiv.className = `message ${isSent ? 'sent' : 'received'}`;
-        messageDiv.dataset.text = msg.text || ''; // Store text for matching later
+        messageDiv.dataset.text = msg.text || '';
+        if (msg.file) messageDiv.dataset.file = msg.file.name;
         
         let receiptHTML = '';
         if (isSent) {
-            let statusIcon = msg.status === 'sending' ? '🕒' : '';
-            let statusClass = msg.status === 'sending' ? 'sending' : 'sent';
-            receiptHTML = `<span class="read-receipt ${statusClass}">${statusIcon}</span>`;
+            if (docId.startsWith('temp_')) {
+                // Optimistic UI states
+                const isFailed = msg.status === 'failed';
+                const statusIcon = isFailed ? '&#x26A0;' : '🕒';
+                const statusClass = msg.status || 'sending';
+                const statusTitle = isFailed ? 'Failed to send' : (msg.status === 'queued' ? 'Queued' : 'Sending...');
+                receiptHTML = `<span class="read-receipt ${statusClass}" title="${statusTitle}">${statusIcon}</span>`;
+            } else {
+                // Placeholder for real messages from Firestore, updateReceipts will style it
+                receiptHTML = `<span class="read-receipt"></span>`;
+            }
         }
 
         messageDiv.innerHTML = `<div class="message-actions">
@@ -786,7 +886,7 @@ const firebaseConfig = {
             </div>`;
         wrapper.appendChild(messageDiv);
         
-        if (!docId.startsWith('temp_')) {
+        if (!docId.startsWith('temp_') && isSent) {
             updateMessage(docId, msg, messageDiv);
         }
 
@@ -852,12 +952,7 @@ const firebaseConfig = {
         updateTypingStatus();
         attemptToSend(content, replyContext);
     }
-    async function attemptToSend(content, replyContext, isOfflineRetry = false) {
-        if (!navigator.onLine && !isOfflineRetry) {
-            await saveMessageOffline({ content, replyContext });
-            return;
-        }
-
+    async function attemptToSend(content, replyContext) {
         const tempId = `temp_${Date.now()}`;
         const optimisticMessageData = {
             senderId: currentUser.uid,
@@ -865,14 +960,19 @@ const firebaseConfig = {
             timestamp: { toDate: () => new Date() },
             ...content,
             replyTo: replyContext,
-            status: 'sending'
+            status: navigator.onLine ? 'sending' : 'queued'
         };
+    
         displayMessage(tempId, optimisticMessageData);
         scrollToBottom();
-
+        
+        if (!navigator.onLine) {
+            await saveMessageOffline({ id: tempId, content, replyContext, roomId: currentRoomId });
+            return;
+        }
+    
         try {
             await sendMessage(content, currentRoomId, replyContext);
-            // On success, the onSnapshot listener will handle replacing the temp message.
         } catch (error) {
             console.error("Message send failed:", error);
             const failedMsgEl = document.getElementById(tempId);
@@ -882,7 +982,7 @@ const firebaseConfig = {
                 if (receipt) {
                     receipt.className = 'read-receipt failed';
                     receipt.title = 'Failed to send';
-                    receipt.innerHTML = `&#x26A0;`; // Warning sign
+                    receipt.innerHTML = `&#x26A0;`;
                 }
                 const meta = failedMsgEl.querySelector('.message-meta');
                 if (!meta.querySelector('.retry-button')) {
@@ -915,8 +1015,21 @@ const firebaseConfig = {
         const messageRef = roomRef.collection('messages').doc();
         batch.set(messageRef, messageData);
         batch.update(roomRef, {
-            lastMessage: { text: content.text || (content.base64Image ? '📷 Photo' : ''), timestamp: messageData.timestamp }
+            lastMessage: { text: content.text || (content.base64Image ? '📷 Photo' : (content.file ? `📄 ${content.file.name}` : '')), timestamp: messageData.timestamp }
         });
+
+        const roomData = roomsDataCache.find(r => r.id === targetRoomId);
+        if (roomData && roomData.participantIds) {
+            roomData.participantIds.forEach(participantId => {
+                if (participantId !== currentUser.uid) {
+                    const userRoomRef = db.collection('users').doc(participantId).collection('rooms').doc(targetRoomId);
+                    batch.update(userRoomRef, {
+                        unreadCount: firebase.firestore.FieldValue.increment(1)
+                    });
+                }
+            });
+        }
+
         await batch.commit();
     }
     function startReply(messageId, senderName, text) {
@@ -956,25 +1069,51 @@ const firebaseConfig = {
         if (msgEl.id.startsWith('temp_') || msgData.senderId !== currentUser.uid) return;
         const receipt = msgEl.querySelector('.read-receipt');
         if (!receipt) return;
+    
         const room = roomsDataCache.find(r => r.id === currentRoomId);
-        if (!room) return;
+        if (!room || !room.participantIds) return;
+    
         const total = room.participantIds.length;
         const readCount = msgData.readBy?.length || 0;
-        receipt.className = 'read-receipt';
-        if (readCount >= total) {
-            receipt.classList.add('read-by-all');
-        } else {
-            receipt.classList.add('delivered');
+    
+        let statusClass, statusTitle;
+    
+        if (total > 0 && readCount >= total) {
+            statusClass = 'receipt-read';
+            statusTitle = 'Read by everyone';
+        } else if (readCount > 1) { // Read by at least one other person
+            statusClass = 'receipt-delivered';
+            statusTitle = 'Delivered'; // Approximating delivery as "read by someone else"
+        } else { // readCount is 1 (only the sender)
+            statusClass = 'receipt-sent';
+            statusTitle = 'Sent';
         }
+    
+        receipt.className = `read-receipt ${statusClass}`;
+        receipt.title = statusTitle;
+        receipt.innerHTML = ''; // Clear optimistic UI icons like the clock
     }
     async function markVisibleMessagesAsRead() {
         if (!currentRoomId || document.hidden) return;
         const unread = dom.chatMessages.querySelectorAll('.message.received:not([data-read])');
+        if (unread.length === 0) return;
+
         const batch = db.batch();
         let updates = 0;
+        
+        const containerRect = dom.chatMessages.getBoundingClientRect();
+
         unread.forEach(msgDiv => {
-            const rect = msgDiv.getBoundingClientRect();
-            if (rect.top >= 0 && rect.bottom <= window.innerHeight) {
+            const msgRect = msgDiv.getBoundingClientRect();
+            
+            // Check for vertical intersection between the message and the chat container.
+            // This is more reliable than checking against the whole window.
+            const isVisible = (
+                msgRect.top <= containerRect.bottom &&
+                msgRect.bottom >= containerRect.top
+            );
+
+            if (isVisible) {
                 batch.update(db.collection('chatrooms').doc(currentRoomId).collection('messages').doc(msgDiv.id), {
                     readBy: firebase.firestore.FieldValue.arrayUnion(currentUser.uid)
                 });
@@ -982,6 +1121,7 @@ const firebaseConfig = {
                 updates++;
             }
         });
+
         if (updates > 0) await batch.commit().catch(console.error);
     }
     function renderPinnedMessage(pinnedData) {
@@ -1064,7 +1204,10 @@ const firebaseConfig = {
     }
     function listenForTyping(roomId) {
         typingUnsubscribe = db.collection('typing').doc(roomId).collection('users').onSnapshot(snapshot => {
-            const typingUsers = snapshot.docs.map(doc => doc.data().name).filter(name => doc.id !== currentUser.uid);
+            const typingUsers = snapshot.docs
+                .filter(doc => doc.id !== currentUser.uid)
+                .map(doc => doc.data().name);
+            
             let indicator = dom.chatMessages.querySelector('.typing-indicator');
             if (typingUsers.length > 0) {
                 if (!indicator) { indicator = document.createElement('div'); indicator.className = 'typing-indicator'; dom.chatMessages.appendChild(indicator); }
@@ -1090,12 +1233,55 @@ const firebaseConfig = {
     function handleImageUpload(e) {
         const file = e.target.files[0];
         if (!file) return;
-        if (file.size > 5 * 1024 * 1024) { showCustomAlert("File Too Large", "Image size cannot exceed 5MB."); return; }
+        if (file.size > 1 * 1024 * 1024) { 
+            showCustomAlert("File Too Large", "Image size cannot exceed 1MB."); 
+            e.target.value = '';
+            return; 
+        }
         const replyContext = activeReply;
         cancelReply();
+        
+        dom.progressBarContainer.style.display = 'block';
+        dom.progressBar.style.width = '50%';
+        
         compressImage(file).then(compressedImage => {
+            dom.progressBar.style.width = '100%';
             attemptToSend({ base64Image: compressedImage }, replyContext);
-        }).catch(console.error);
+            setTimeout(() => {
+                dom.progressBarContainer.style.display = 'none';
+                dom.progressBar.style.width = '0%';
+            }, 500);
+        }).catch(err => {
+            console.error("Image compression error:", err);
+            showCustomAlert("Error", "Could not process image.");
+            dom.progressBarContainer.style.display = 'none';
+            dom.progressBar.style.width = '0%';
+        });
+        e.target.value = '';
+    }
+    function handleFileUpload(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        if (file.size > 1 * 1024 * 1024) { // 1MB limit
+            showCustomAlert("File Too Large", "File size cannot exceed 1MB.");
+            e.target.value = '';
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const fileData = {
+                name: file.name,
+                type: file.type,
+                size: file.size,
+                dataUrl: event.target.result
+            };
+            attemptToSend({ file: fileData }, activeReply);
+        };
+        reader.onerror = () => {
+            showCustomAlert("Error", "Could not read file.");
+        };
+        reader.readAsDataURL(file);
         e.target.value = '';
     }
     function compressImage(file, quality = 0.7, maxWidth = 1024) {
@@ -1114,6 +1300,7 @@ const firebaseConfig = {
                     ctx.drawImage(img, 0, 0, width, height);
                     resolve(ctx.canvas.toDataURL('image/jpeg', quality));
                 };
+                img.onerror = reject;
             };
             reader.onerror = error => reject(error);
         });
@@ -1569,7 +1756,9 @@ const firebaseConfig = {
             .where('adminId', '==', currentUser.uid)
             .where('status', '==', 'pending')
             .onSnapshot(snapshot => {
-                dom.adminPanelBtn.classList.toggle('has-badge', !snapshot.empty);
+                const hasRequests = !snapshot.empty;
+                dom.adminPanelBtn.style.display = hasRequests ? 'flex' : 'none';
+                dom.adminPanelBtn.classList.toggle('has-badge', hasRequests);
             });
     }
     async function showAdminPanel() {
@@ -1611,7 +1800,7 @@ const firebaseConfig = {
                 const { userId, userName, roomId } = reqDoc.data();
                 
                 const userDoc = await db.collection('users').doc(userId).get();
-                const userPhotoUrl = userDoc.exists ? userDoc.data().photoUrl : null;
+                const userPhotoUrl = userDoc.exists ? (userDoc.data().photoUrl || null) : null;
 
                 const batch = db.batch();
                 const roomRef = db.collection('chatrooms').doc(roomId);
@@ -2089,7 +2278,7 @@ const firebaseConfig = {
             if (e.target.tagName === 'SPAN') {
                 insertTextAtCursor(dom.messageInput, e.target.textContent);
                 dom.emojiPicker.style.display = 'none';
-                 dom.sendButton.disabled = dom.messageInput.value.trim() === '';
+                dom.sendButton.disabled = dom.messageInput.value.trim() === '';
             }
         });
     }
