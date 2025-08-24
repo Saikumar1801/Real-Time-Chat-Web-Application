@@ -103,9 +103,14 @@ service cloud.firestore {
                          (isCreatingValidPrivateChatWith(userId, roomId));
                          
         allow update: if isParticipantInPrivateList(roomId) && 
-                         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['unreadCount']);
+                         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['unreadCount', 'clearedAt']);
 
         allow delete: if isOwner(userId) || isRoomAdmin(roomId);
+      }
+      
+      // FCM tokens for push notifications
+      match /fcmTokens/{tokenId} {
+        allow read, write: if isOwner(userId);
       }
     }
     
@@ -140,10 +145,11 @@ service cloud.firestore {
       // --- SUBCOLLECTIONS of chatrooms ---
       match /messages/{messageId} {
         allow list, read: if isParticipantInPrivateList(roomId);
-        allow create: if isParticipantInPrivateList(roomId) && request.resource.data.senderId == request.auth.uid;
+        allow create: if isParticipantInPrivateList(roomId) && 
+                        request.resource.data.senderId == request.auth.uid;
         allow update: if 
             (request.resource.data.senderId == request.auth.uid && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['text', 'isEdited'])) ||
-            (isParticipantInPrivateList(roomId) && request.resource.data.diff(resource.data).affectedKeys().hasAny(['reactions', 'readBy']));
+            (isParticipantInPrivateList(roomId) && request.resource.data.diff(resource.data).affectedKeys().hasAny(['reactions', 'readBy', 'options']));
         allow delete: if (resource.data.senderId == request.auth.uid || isRoomAdmin(roomId));
       }
       

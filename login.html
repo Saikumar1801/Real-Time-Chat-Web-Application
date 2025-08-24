@@ -25,24 +25,24 @@
                 <div class="form-group">
                     <label for="login-email" class="form-label">이메일</label>
                     <div class="input-wrapper">
-                        <input type="email" id="login-email" class="form-input" placeholder="your@email.com" required>
+                        <input type="email" id="login-email" class="form-input" placeholder="your@email.com" required aria-required="true">
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label for="login-password" class="form-label">비밀번호</label>
                     <div class="input-wrapper">
-                        <input type="password" id="login-password" class="form-input" placeholder="비밀번호를 입력하세요" required>
-                        <button type="button" class="password-toggle" id="password-toggle">
+                        <input type="password" id="login-password" class="form-input" placeholder="비밀번호를 입력하세요" required aria-required="true">
+                        <button type="button" class="password-toggle" id="password-toggle" aria-label="비밀번호 보기/숨기기">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-eye"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
                         </button>
                     </div>
                 </div>
 
                 <div class="form-options">
-                    <label class="checkbox-wrapper">
+                    <label class="checkbox-wrapper" for="remember-me">
                         <input type="checkbox" id="remember-me">
-                        <span class="checkbox-custom">
+                        <span class="checkbox-custom" aria-hidden="true">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check"><path d="M20 6 9 17l-5-5"/></svg>
                         </span>
                         <span class="checkbox-label">로그인 상태 유지</span>
@@ -54,7 +54,7 @@
                     <span class="btn-text">로그인</span>
                 </button>
 
-                <div id="auth-error" class="error-message"></div>
+                <div id="auth-error" class="error-message" role="alert"></div>
             </form>
 
             <div class="auth-divider"><span>또는</span></div>
@@ -63,7 +63,7 @@
                 <div class="form-group">
                     <label for="guest-name" class="form-label">게스트 이름</label>
                     <div class="input-wrapper">
-                        <input type="text" id="guest-name" class="form-input" placeholder="표시될 이름을 입력하세요" minlength="2" maxlength="20" required>
+                        <input type="text" id="guest-name" class="form-input" placeholder="표시될 이름을 입력하세요" minlength="2" maxlength="20" required aria-required="true">
                     </div>
                     <div class="input-hint">2-20자 사이로 입력해주세요</div>
                 </div>

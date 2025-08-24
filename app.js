@@ -1,19 +1,21 @@
 window.addEventListener('DOMContentLoaded', () => {
     // --- Firebase Configuration ---
-const firebaseConfig = {
-    apiKey: "AIzaSyCkXiKhWwx_W29ZFU8mmB-eecFHt1WZCX4",
-    authDomain: "chat-app-6194f.firebaseapp.com",
-    projectId: "chat-app-6194f",
-    appId: "1:432201991680:web:96ac04f905881f5332fae5",
-    measurementId: "G-5MG6QESZ5K"
-};
+    const firebaseConfig = {
+        apiKey: "AIzaSyCkXiKhWwx_W29ZFU8mmB-eecFHt1WZCX4",
+        authDomain: "chat-app-6194f.firebaseapp.com",
+        projectId: "chat-app-6194f",
+        appId: "1:432201991680:web:96ac04f905881f5332fae5",
+        measurementId: "G-5MG6QESZ5K"
+    };
 
-    // Placeholder images
+    // Placeholder images & Icons
     const PLACEHOLDER_IMAGE_40 = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"><rect width="100%" height="100%" fill="lightgray"/></svg>';
     const PLACEHOLDER_IMAGE_100 = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="50" fill="#aaa">👤</text></svg>';
     const PLACEHOLDER_GROUP_AVATAR_40 = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"><rect width="100%" height="100%" fill="%23e0e0e0"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="20" fill="%23888">👥</text></svg>';
     const GROUP_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>`;
     const PERSONAL_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
+    const NOTIFICATION_SOUND_URI = 'data:audio/mpeg;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdTb3VuZEJhbmsuY29tIC8gTGliZXJ0eSBtdXNpYy5jb20ATUFJAEyреставраторQQP/80DEeSAAAAAAAAAAAAAAAAAAAAAANUjEuNSwwLjAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDV1QS4uRQsAAAAA//wAxkkLAM0AAAAAAD4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAASDs90AFG8AAAAaQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB/96DE4AhQAAAAAABVQQBAAAAAA+gYAMDERiAKAEQk4AAAAAD/96DE4AhQADGkQAAAAAABJwgAADB1AAAADQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//wAxg4gAAAABAAAAAAAAB/96DE4QAQAAAAAAAFQQBAAAAACgGAwATAtAAAADgA//+xwv/96DE4QAQADGkQAAAAAABJwgAADB1AAAADQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//wAxg4gAAAABAAAAAAAAD/96DE4QAQAAAAAAAFQQBAAAAACgGAwATAtAAAADgA//+xwv/96DE4QAQADGkQAAAAAABJwgAADB1AAAADQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+
 
     // --- Safety Check & Initialization ---
     if (typeof firebase === 'undefined') {
@@ -34,8 +36,15 @@ const firebaseConfig = {
         currentUserProfileData = {}, activeReply = null,
         currentSearchResults = [], currentSearchIndex = -1,
         swipeState = { startX: 0, currentX: 0, isSwiping: false, target: null, openItemWrapper: null },
-        roomListPresenceUnsubscribes = {};
+        roomListPresenceUnsubscribes = {},
+        readByPopover = null, hidePopoverTimeout = null,
+        lightboxGallery = [], lightboxCurrentIndex = -1,
+        lastFocusedElement = null, mediaRecorder = null, audioChunks = [], isRecording = false, recordingInterval = null,
+        soundNotificationsEnabled = false,
+        activePicker = null;
         
+    const notificationSound = new Audio(NOTIFICATION_SOUND_URI);
+
     // --- DOM Elements ---
     const dom = {
         body: document.body,
@@ -44,15 +53,22 @@ const firebaseConfig = {
         newRoomBtn: document.getElementById('new-room-btn'), joinRoomBtn: document.getElementById('join-room-btn'),
         privateChatBtn: document.getElementById('private-chat-btn'), darkModeToggle: document.getElementById('dark-mode-toggle'),
         adminPanelBtn: document.getElementById('admin-panel-btn'), invitationsBtn: document.getElementById('invitations-btn'),
+        soundNotificationToggle: document.getElementById('sound-notification-toggle'),
         chatArea: document.querySelector('.chat-area'), chatPlaceholder: document.querySelector('.chat-placeholder'),
         chatView: document.querySelector('.chat-view'), roomInfoDiv: document.querySelector('.room-info'),
         roomTitleElem: document.querySelector('.room-title'), roomStatusElem: document.querySelector('.room-status'),
-        leaveRoomBtn: document.getElementById('leave-room-btn'), chatMessages: document.querySelector('.chat-messages'),
+        leaveRoomBtn: document.getElementById('leave-room-btn'),
+        clearChatBtn: document.getElementById('clear-chat-btn'),
+        chatMessages: document.querySelector('.chat-messages'),
         messageSearchInput: document.getElementById('message-search-input'),
         searchPrevBtn: document.getElementById('search-prev-btn'), searchNextBtn: document.getElementById('search-next-btn'),
         inputForm: document.querySelector('.chat-input-area'), messageInput: document.querySelector('.message-input'),
         sendButton: document.querySelector('.send-button'),
+        micButton: document.getElementById('mic-btn'),
         emojiBtn: document.getElementById('emoji-btn'), emojiPicker: document.getElementById('emoji-picker'),
+        pollBtn: document.getElementById('poll-btn'), createPollModal: document.getElementById('create-poll-modal'),
+        createPollForm: document.getElementById('create-poll-form'), addPollOptionBtn: document.getElementById('add-poll-option-btn'),
+        pollOptionsContainer: document.getElementById('poll-options-container'),
         imageAttachBtn: document.getElementById('image-attach-btn'), imageInput: document.getElementById('image-input'),
         fileAttachBtn: document.getElementById('file-attach-btn'), fileInput: document.getElementById('file-input'),
         backButton: document.querySelector('.back-button.mobile-only'),
@@ -79,7 +95,7 @@ const firebaseConfig = {
         userProfileEditBtn: document.getElementById('user-profile-edit-btn'), userProfilePhoto: document.getElementById('user-profile-photo'),
         profilePhotoInput: document.getElementById('profile-photo-input'), profilePhotoEditOverlay: document.getElementById('profile-photo-edit-overlay'),
         userProfileNameView: document.getElementById('user-profile-name-view'), userProfileNameEdit: document.getElementById('user-profile-name-edit'),
-        userProfileStatusView: document.getElementById('user-profile-status-view'), userProfileStatusEdit: document.getElementById('user-profile-status-edit'),
+        userProfileStatusView: document.getElementById('user-profile-status-view'), userProfileCustomStatusView: document.getElementById('user-profile-custom-status-view'), userProfileStatusEdit: document.getElementById('user-profile-custom-status-edit'),
         userProfileEmailView: document.getElementById('user-profile-email-view'), userProfileEmailEdit: document.getElementById('user-profile-email-edit'),
         userProfilePhoneView: document.getElementById('user-profile-phone-view'), userProfilePhoneEdit: document.getElementById('user-profile-phone-edit'),
         userProfileId: document.getElementById('user-profile-id'),
@@ -87,6 +103,16 @@ const firebaseConfig = {
         profileSaveBtn: document.getElementById('profile-save-btn'), profileModalFooter: document.getElementById('profile-modal-footer'),
         adminPanelModal: document.getElementById('admin-panel-modal'), joinRequestsList: document.getElementById('join-requests-list'),
         invitationsModal: document.getElementById('invitations-modal'), pendingInvitationsList: document.getElementById('pending-invitations-list'),
+        lightbox: document.getElementById('image-lightbox'),
+        lightboxImage: document.getElementById('lightbox-image'),
+        lightboxSender: document.getElementById('lightbox-sender'),
+        lightboxTimestamp: document.getElementById('lightbox-timestamp'),
+        lightboxDownload: document.getElementById('lightbox-download'),
+        lightboxClose: document.getElementById('lightbox-close'),
+        lightboxPrev: document.getElementById('lightbox-prev'),
+        lightboxNext: document.getElementById('lightbox-next'),
+        recordingIndicator: document.getElementById('recording-indicator'),
+        recordingTimer: document.getElementById('recording-timer'),
         progressBarContainer: document.createElement('div'),
         progressBar: document.createElement('div')
     };
@@ -109,13 +135,22 @@ const firebaseConfig = {
         if (btnLoader) btnLoader.classList.toggle('hidden', !isLoading);
     }
     function showModal(modalElement) {
+        lastFocusedElement = document.activeElement;
         modalElement.style.display = 'flex';
         document.body.classList.add('modal-open');
+        const firstFocusable = modalElement.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+        if (firstFocusable) {
+            firstFocusable.focus();
+        }
     }
     function hideModal(modalElement) {
         modalElement.style.display = 'none';
         if (document.querySelectorAll('.modal-overlay[style*="display: flex"]').length === 0) {
             document.body.classList.remove('modal-open');
+        }
+        if (lastFocusedElement) {
+            lastFocusedElement.focus();
+            lastFocusedElement = null;
         }
     }
     function generateSearchKeys(displayName) {
@@ -137,6 +172,27 @@ const firebaseConfig = {
             clearTimeout(timeout);
             timeout = setTimeout(later, wait);
         };
+    }
+    function formatLastSeen(timestamp) {
+        if (!timestamp) return 'Offline';
+    
+        const now = new Date();
+        const lastSeen = timestamp.toDate();
+        const diffSeconds = (now.getTime() - lastSeen.getTime()) / 1000;
+    
+        if (diffSeconds < 300) return 'Online'; // 5 minutes
+        if (diffSeconds < 3600) return `Last seen ${Math.round(diffSeconds / 60)} minutes ago`;
+    
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+    
+        if (lastSeen >= today) {
+            return `Last seen today at ${lastSeen.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`;
+        }
+        if (lastSeen >= yesterday) {
+            return `Last seen yesterday at ${lastSeen.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`;
+        }
+        return `Last seen on ${lastSeen.toLocaleDateString()}`;
     }
 
     // --- AUTH & APP START ---
@@ -184,14 +240,21 @@ const firebaseConfig = {
         listenForAdminUpdates();
         setupOfflineHandling();
         setupEmojiPicker();
+        setupPollCreator();
+
+        // Load sound setting from localStorage
+        soundNotificationsEnabled = localStorage.getItem('soundNotificationsEnabled') === 'true';
+        if (dom.soundNotificationToggle) dom.soundNotificationToggle.checked = soundNotificationsEnabled;
     }
 
     // --- CORE FEATURES ---
     function applyTheme() {
         const isDarkMode = localStorage.getItem('darkMode') === 'true';
         dom.body.classList.toggle('dark-mode', isDarkMode);
-        dom.darkModeToggle.querySelector('.sun-icon').style.display = isDarkMode ? 'none' : 'block';
-        dom.darkModeToggle.querySelector('.moon-icon').style.display = isDarkMode ? 'block' : 'none';
+        if (dom.darkModeToggle) {
+            dom.darkModeToggle.querySelector('.sun-icon').style.display = isDarkMode ? 'none' : 'block';
+            dom.darkModeToggle.querySelector('.moon-icon').style.display = isDarkMode ? 'block' : 'none';
+        }
     }
     function toggleTheme() {
         localStorage.setItem('darkMode', !dom.body.classList.contains('dark-mode'));
@@ -204,6 +267,15 @@ const firebaseConfig = {
         document.addEventListener('visibilitychange', () => document.visibilityState === 'visible' && update());
         window.addEventListener('focus', update);
         update();
+    }
+    function playNotificationSound(message) {
+        if (
+            soundNotificationsEnabled &&
+            message.senderId !== currentUser.uid &&
+            (currentRoomId !== message.roomId || !document.hasFocus())
+        ) {
+            notificationSound.play().catch(error => console.warn("Audio play failed:", error));
+        }
     }
     
     // --- OFFLINE SUPPORT ---
@@ -293,36 +365,69 @@ const firebaseConfig = {
 
     // --- EVENT LISTENERS ---
     function setupEventListeners() {
-        dom.darkModeToggle.addEventListener('click', toggleTheme);
-        dom.profileBtn.addEventListener('click', () => showUserProfile(currentUser.uid, true));
-        dom.newRoomBtn.addEventListener('click', createNewGroupRoom);
-        dom.joinRoomBtn.addEventListener('click', joinGroupById);
-        dom.privateChatBtn.addEventListener('click', startPrivateChat);
-        dom.adminPanelBtn.addEventListener('click', showAdminPanel);
-        dom.invitationsBtn.addEventListener('click', showInvitationsPanel);
-        dom.searchBar.addEventListener('input', (e) => renderRoomList(roomsDataCache, e.target.value));
-        dom.roomInfoDiv.addEventListener('click', showRoomInfo);
-        dom.leaveRoomBtn.addEventListener('click', deleteRoomForSelf);
-        dom.inputForm.addEventListener('submit', handleSendMessage);
-        dom.imageAttachBtn.addEventListener('click', () => dom.imageInput.click());
-        dom.imageInput.addEventListener('change', handleImageUpload);
-        dom.fileAttachBtn.addEventListener('click', () => dom.fileInput.click());
-        dom.fileInput.addEventListener('change', handleFileUpload);
-        dom.messageInput.addEventListener('input', () => {
-            dom.sendButton.disabled = dom.messageInput.value.trim() === '';
+        if (dom.darkModeToggle) dom.darkModeToggle.addEventListener('click', toggleTheme);
+        if (dom.profileBtn) dom.profileBtn.addEventListener('click', () => showUserProfile(currentUser.uid, true));
+        if (dom.newRoomBtn) dom.newRoomBtn.addEventListener('click', createNewGroupRoom);
+        if (dom.joinRoomBtn) dom.joinRoomBtn.addEventListener('click', joinGroupById);
+        if (dom.privateChatBtn) dom.privateChatBtn.addEventListener('click', startPrivateChat);
+        if (dom.adminPanelBtn) dom.adminPanelBtn.addEventListener('click', showAdminPanel);
+        if (dom.invitationsBtn) dom.invitationsBtn.addEventListener('click', showInvitationsPanel);
+        if (dom.searchBar) dom.searchBar.addEventListener('input', (e) => renderRoomList(roomsDataCache, e.target.value));
+        if (dom.roomInfoDiv) dom.roomInfoDiv.addEventListener('click', showRoomInfo);
+        if (dom.leaveRoomBtn) dom.leaveRoomBtn.addEventListener('click', deleteRoomForSelf);
+        if (dom.clearChatBtn) dom.clearChatBtn.addEventListener('click', handleClearChat);
+        if (dom.inputForm) dom.inputForm.addEventListener('submit', handleSendMessage);
+        if (dom.imageAttachBtn) dom.imageAttachBtn.addEventListener('click', () => dom.imageInput.click());
+        if (dom.imageInput) dom.imageInput.addEventListener('change', handleImageUpload);
+        if (dom.fileAttachBtn) dom.fileAttachBtn.addEventListener('click', () => dom.fileInput.click());
+        if (dom.fileInput) dom.fileInput.addEventListener('change', handleFileUpload);
+        if (dom.micButton) dom.micButton.addEventListener('pointerdown', handleStartRecording);
+        if (dom.messageInput) dom.messageInput.addEventListener('input', () => {
+            const hasText = dom.messageInput.value.trim() !== '';
+            dom.sendButton.disabled = !hasText;
+            // dom.sendButton.style.display = hasText ? 'inline-flex' : 'none';
+            // dom.micButton.style.display = hasText ? 'none' : 'inline-flex';
             debounce(updateTypingStatus, 500)();
         });
-        dom.cancelReplyBtn.addEventListener('click', cancelReply);
-        dom.chatMessages.addEventListener('scroll', handleChatScroll);
-        dom.messageSearchInput.addEventListener('input', debounce(handleMessageSearch, 300));
-        dom.searchPrevBtn.addEventListener('click', () => navigateToSearchResult(-1));
-        dom.searchNextBtn.addEventListener('click', () => navigateToSearchResult(1));
-        dom.backButton.addEventListener('click', goBackToRoomList);
-        dom.roomList.addEventListener('pointerdown', handlePointerDown);
+        if (dom.cancelReplyBtn) dom.cancelReplyBtn.addEventListener('click', cancelReply);
+        if (dom.chatMessages) {
+            dom.chatMessages.addEventListener('scroll', handleChatScroll);
+            dom.chatMessages.addEventListener('click', (e) => {
+                if (e.target.classList.contains('message-image')) {
+                    openLightbox(e.target);
+                }
+                const playBtn = e.target.closest('.voice-play-btn');
+                if (playBtn) {
+                    toggleVoiceMessage(playBtn);
+                }
+            });
+        }
+        if (dom.messageSearchInput) dom.messageSearchInput.addEventListener('input', debounce(handleMessageSearch, 300));
+        if (dom.searchPrevBtn) dom.searchPrevBtn.addEventListener('click', () => navigateToSearchResult(-1));
+        if (dom.searchNextBtn) dom.searchNextBtn.addEventListener('click', () => navigateToSearchResult(1));
+        if (dom.backButton) dom.backButton.addEventListener('click', goBackToRoomList);
+        if (dom.roomList) dom.roomList.addEventListener('pointerdown', handlePointerDown);
+        if (dom.soundNotificationToggle) dom.soundNotificationToggle.addEventListener('change', (e) => {
+            soundNotificationsEnabled = e.target.checked;
+            localStorage.setItem('soundNotificationsEnabled', soundNotificationsEnabled);
+        });
+
+        // Lightbox Listeners
+        if (dom.lightbox) {
+            dom.lightbox.addEventListener('click', (e) => {
+                if (e.target === dom.lightbox) closeLightbox();
+            });
+            dom.lightboxClose.addEventListener('click', closeLightbox);
+            dom.lightboxPrev.addEventListener('click', showPrevImage);
+            dom.lightboxNext.addEventListener('click', showNextImage);
+        }
         
         document.body.addEventListener('click', (e) => {
-            if (!dom.emojiPicker.contains(e.target) && !dom.emojiBtn.contains(e.target)) {
-                dom.emojiPicker.style.display = 'none';
+            if (activePicker && !activePicker.contains(e.target)) {
+                const isButtonClick = [dom.emojiBtn].some(btn => btn.contains(e.target));
+                if (!isButtonClick) {
+                    togglePicker(null);
+                }
             }
 
             const copyButton = e.target.closest('.copy-button');
@@ -372,7 +477,7 @@ const firebaseConfig = {
 
         document.querySelectorAll('.modal-overlay').forEach(modal => {
             modal.addEventListener('click', (e) => { 
-                if (e.target === modal) {
+                if (e.target === modal && modal.id !== 'image-lightbox') {
                     hideModal(modal);
                     if (modal.id === 'participant-modal' && presenceUnsubscribe) {
                         presenceUnsubscribe();
@@ -387,19 +492,35 @@ const firebaseConfig = {
                     presenceUnsubscribe = null;
                 }
             });
+            // A11y: Focus trapping
+            modal.addEventListener('keydown', (e) => {
+                if (e.key !== 'Tab') return;
+                const focusable = Array.from(modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')).filter(el => el.offsetParent !== null);
+                if (focusable.length === 0) return;
+
+                const first = focusable[0];
+                const last = focusable[focusable.length - 1];
+                if (e.shiftKey && document.activeElement === first) {
+                    last.focus();
+                    e.preventDefault();
+                } else if (!e.shiftKey && document.activeElement === last) {
+                    first.focus();
+                    e.preventDefault();
+                }
+            });
         });
         
-        dom.userProfileEditBtn.addEventListener('click', () => toggleProfileEditMode(true));
-        dom.profileCancelBtn.addEventListener('click', () => toggleProfileEditMode(false));
-        dom.profileSaveBtn.addEventListener('click', saveUserProfile);
-        dom.customPromptModal.querySelector('#custom-prompt-cancel').addEventListener('click', () => hideModal(dom.customPromptModal));
-        dom.editMessageForm.addEventListener('submit', handleEditMessage);
-        dom.editMessageModal.querySelector('#edit-message-cancel').addEventListener('click', () => hideModal(dom.editMessageModal));
+        if (dom.userProfileEditBtn) dom.userProfileEditBtn.addEventListener('click', () => toggleProfileEditMode(true));
+        if (dom.profileCancelBtn) dom.profileCancelBtn.addEventListener('click', () => toggleProfileEditMode(false));
+        if (dom.profileSaveBtn) dom.profileSaveBtn.addEventListener('click', saveUserProfile);
+        if (dom.customPromptModal) dom.customPromptModal.querySelector('#custom-prompt-cancel').addEventListener('click', () => hideModal(dom.customPromptModal));
+        if (dom.editMessageForm) dom.editMessageForm.addEventListener('submit', handleEditMessage);
+        if (dom.editMessageModal) dom.editMessageModal.querySelector('#edit-message-cancel').addEventListener('click', () => hideModal(dom.editMessageModal));
         
-        dom.addMemberBtn.addEventListener('click', addMembersToRoom);
-        dom.editRoomBtn.addEventListener('click', editRoomName);
-        dom.adminDeleteRoomBtn.addEventListener('click', deleteRoomAsAdmin);
-        dom.mediaGalleryBtn.addEventListener('click', showMediaGallery);
+        if (dom.addMemberBtn) dom.addMemberBtn.addEventListener('click', addMembersToRoom);
+        if (dom.editRoomBtn) dom.editRoomBtn.addEventListener('click', editRoomName);
+        if (dom.adminDeleteRoomBtn) dom.adminDeleteRoomBtn.addEventListener('click', deleteRoomAsAdmin);
+        if (dom.mediaGalleryBtn) dom.mediaGalleryBtn.addEventListener('click', showMediaGallery);
     }
 
     // --- ROOM LIST & SELECTION ---
@@ -492,20 +613,20 @@ const firebaseConfig = {
                 avatarHTML = room.photoUrl ? `<img src="${room.photoUrl}" alt="${title}" class="room-item-avatar">` : GROUP_ICON_SVG;
             }
 
-            return `<div class="room-item-wrapper" data-room-id="${room.id}">
+            return `<li class="room-item-wrapper" data-room-id="${room.id}">
                         <div class="room-item-actions">
-                            <button class="mute-button" data-room-id="${room.id}" title="${room.isMuted ? 'Unmute' : 'Mute'}">
+                            <button class="mute-button" data-room-id="${room.id}" aria-label="${room.isMuted ? 'Unmute' : 'Mute'} chat with ${title}">
                                 ${room.isMuted ? unMuteIcon : muteIcon}
                                 <span>${room.isMuted ? 'Unmute' : 'Mute'}</span>
                             </button>
-                            <button class="pin-button" data-room-id="${room.id}" title="${room.isPinned ? 'Unpin' : 'Pin'}">
+                            <button class="pin-button" data-room-id="${room.id}" aria-label="${room.isPinned ? 'Unpin' : 'Pin'} chat with ${title}">
                                 ${room.isPinned ? pinnedIcon : pinIcon}
                                 <span>${room.isPinned ? 'Unpin' : 'Pin'}</span>
                             </button>
                         </div>
-                        <div class="room-item-content ${room.id === currentRoomId ? 'active' : ''} ${room.isPinned ? 'pinned' : ''}">
+                        <button class="room-item-content" ${room.id === currentRoomId ? 'aria-current="page"' : ''} ${room.isPinned ? 'data-pinned="true"' : ''}>
                             <div class="room-item-avatar-wrapper">
-                                <div class="room-item-avatar">
+                                <div class="room-item-avatar" aria-hidden="true">
                                     ${avatarHTML}
                                 </div>
                                 ${isPrivate ? `<span class="online-status-indicator" data-user-id="${otherUserId}"></span>` : ''}
@@ -517,15 +638,20 @@ const firebaseConfig = {
                                 </div>
                                 <div class="room-item-footer">
                                     <span class="room-item-preview">${lastMsgText}</span>
-                                    ${room.unreadCount > 0 ? `<div class="unread-badge">${room.unreadCount}</div>` : ''}
+                                    ${room.unreadCount > 0 ? `<div class="unread-badge" aria-label="${room.unreadCount} unread messages">${room.unreadCount}</div>` : ''}
                                 </div>
                             </div>
-                        </div>
-                    </div>`;
+                        </button>
+                    </li>`;
         }).join('') || '<p class="empty-list-message">No matching rooms found.</p>';
         
         dom.roomList.querySelectorAll('.mute-button').forEach(el => el.addEventListener('click', (e) => { e.stopPropagation(); toggleMute(el.dataset.roomId); }));
         dom.roomList.querySelectorAll('.pin-button').forEach(el => el.addEventListener('click', (e) => { e.stopPropagation(); togglePin(el.dataset.roomId); }));
+        dom.roomList.querySelectorAll('.room-item-content').forEach(el => el.addEventListener('click', (e) => {
+             e.stopPropagation();
+             const roomId = el.closest('.room-item-wrapper').dataset.roomId;
+             if (roomId) selectRoom(roomId);
+        }));
         updateRoomListPresence();
     }
     function updateRoomListPresence() {
@@ -550,11 +676,10 @@ const firebaseConfig = {
                 roomListPresenceUnsubscribes[userId] = presenceRef.onSnapshot(doc => {
                     const indicator = document.querySelector(`.online-status-indicator[data-user-id="${userId}"]`);
                     if (indicator) {
-                        const now = Date.now();
-                        const onlineThreshold = 5 * 60 * 1000;
-                        const isOnline = doc.exists && doc.data().lastActiveAt && (now - doc.data().lastActiveAt.toMillis() < onlineThreshold);
+                        const statusText = doc.exists ? formatLastSeen(doc.data().lastActiveAt) : 'Offline';
+                        const isOnline = statusText === 'Online';
                         indicator.classList.toggle('online', isOnline);
-                        indicator.title = isOnline ? 'Online' : 'Offline';
+                        indicator.title = statusText;
                     }
                 }, err => {
                     console.error(`Error listening to presence for ${userId}:`, err);
@@ -601,10 +726,8 @@ const firebaseConfig = {
             if (data.type === 'private') {
                 const otherUserId = data.participantIds.find(id => id !== currentUser.uid);
                 roomPresenceUnsubscribe = db.collection('presence').doc(otherUserId).onSnapshot(presenceDoc => {
-                    const now = Date.now();
-                    const onlineThreshold = 5 * 60 * 1000;
-                    const isOnline = presenceDoc.exists && presenceDoc.data().lastActiveAt && (now - presenceDoc.data().lastActiveAt.toMillis() < onlineThreshold);
-                    dom.roomStatusElem.textContent = isOnline ? 'Online' : 'Offline';
+                    const statusText = presenceDoc.exists ? formatLastSeen(presenceDoc.data().lastActiveAt) : 'Offline';
+                    dom.roomStatusElem.textContent = statusText;
                 });
             } else {
                 dom.roomStatusElem.textContent = `${data.participantIds.length} members`;
@@ -635,10 +758,8 @@ const firebaseConfig = {
         const room = roomsDataCache.find(r => r.id === roomId);
         if (!room) return;
     
-        // 1. Optimistically update local state
         room.isMuted = !room.isMuted;
         
-        // 2. Update UI immediately
         const roomItemWrapper = document.querySelector(`.room-item-wrapper[data-room-id="${roomId}"]`);
         if (roomItemWrapper) {
             const muteButton = roomItemWrapper.querySelector('.mute-button');
@@ -656,7 +777,6 @@ const firebaseConfig = {
         
         closeSwipedItem();
     
-        // 3. Perform database operation
         const muteRef = db.collection('mutes').doc(currentUser.uid).collection('rooms').doc(roomId);
         try {
             if (room.isMuted) {
@@ -665,10 +785,9 @@ const firebaseConfig = {
                 await muteRef.delete();
             }
         } catch (error) {
-            // Revert UI on failure
             console.error("Failed to update mute status:", error);
-            room.isMuted = !room.isMuted; // Revert local state
-            renderRoomList(roomsDataCache, dom.searchBar.value); // Re-render to be safe
+            room.isMuted = !room.isMuted;
+            renderRoomList(roomsDataCache, dom.searchBar.value);
             showCustomAlert("Error", "Could not update mute status.");
         }
     }
@@ -677,14 +796,10 @@ const firebaseConfig = {
         const room = roomsDataCache.find(r => r.id === roomId);
         if (!room) return;
     
-        // 1. Optimistically update local state
         room.isPinned = !room.isPinned;
-    
-        // 2. Re-render the whole list because sort order changes
         renderRoomList(roomsDataCache, dom.searchBar.value);
-        closeSwipedItem(false); // Close without animation
+        closeSwipedItem(false);
     
-        // 3. Perform database operation
         const pinRef = db.collection('pinnedRooms').doc(currentUser.uid).collection('rooms').doc(roomId);
         try {
             if (room.isPinned) {
@@ -693,10 +808,9 @@ const firebaseConfig = {
                 await pinRef.delete();
             }
         } catch (error) {
-            // Revert UI on failure
             console.error("Failed to update pin status:", error);
-            room.isPinned = !room.isPinned; // Revert local state
-            renderRoomList(roomsDataCache, dom.searchBar.value); // Re-render to show correct state
+            room.isPinned = !room.isPinned;
+            renderRoomList(roomsDataCache, dom.searchBar.value);
             showCustomAlert("Error", "Could not update pin status.");
         }
     }
@@ -707,7 +821,7 @@ const firebaseConfig = {
         const targetContent = e.target.closest('.room-item-content');
         if (!targetContent) return;
 
-        if (swipeState.openItemWrapper && swipeState.openItemWrapper !== targetContent.parentElement) {
+        if (swipeState.openItemWrapper && swipeState.openItemWrapper !== targetContent.parentElement.parentElement) {
             closeSwipedItem();
         }
         
@@ -748,9 +862,6 @@ const firebaseConfig = {
                     swipeState.openItemWrapper = null;
                 }
             }
-        } else {
-            const roomId = swipeState.target.parentElement.dataset.roomId;
-            if (roomId) selectRoom(roomId);
         }
         cleanupSwipe();
     }
@@ -771,8 +882,17 @@ const firebaseConfig = {
     }
 
     // --- MESSAGING ---
-    function listenForMessages(roomId) {
-        const query = db.collection('chatrooms').doc(roomId).collection('messages').orderBy('timestamp', 'desc').limit(30);
+    async function listenForMessages(roomId) {
+        const userRoomDoc = await db.collection('users').doc(currentUser.uid).collection('rooms').doc(roomId).get();
+        const clearedAt = userRoomDoc.data()?.clearedAt;
+
+        let query = db.collection('chatrooms').doc(roomId).collection('messages').orderBy('timestamp', 'desc');
+
+        if (clearedAt) {
+            query = query.where('timestamp', '>', clearedAt);
+        }
+        query = query.limit(30);
+
         messagesUnsubscribe = query.onSnapshot(snapshot => {
             const isInitialLoad = !lastVisibleMessage;
             let newMessagesForCurrentUser = false;
@@ -788,6 +908,7 @@ const firebaseConfig = {
                     if (change.type === 'added') {
                         if (docData.senderId !== currentUser.uid) {
                             newMessagesForCurrentUser = true;
+                            playNotificationSound({ ...docData, roomId });
                         }
                         const isScrolledToBottom = dom.chatMessages.scrollHeight - dom.chatMessages.clientHeight <= dom.chatMessages.scrollTop + 50;
                         const tempId = Array.from(dom.chatMessages.querySelectorAll('.message[id^="temp_"]')).find(el => el.dataset.text === docData.text || el.dataset.file === docData.file?.name);
@@ -799,32 +920,105 @@ const firebaseConfig = {
                     if (change.type === 'removed') document.getElementById(docId)?.closest('.message-wrapper').remove();
                 });
             }
-            if (!snapshot.empty) lastVisibleMessage = snapshot.docs[snapshot.docs.length - 1];
+            if (!snapshot.empty) lastVisibleMessage = snapshot.docs[0]; // Desc query, so first doc is the oldest in this batch
             else if (isInitialLoad) lastVisibleMessage = null;
             if (isInitialLoad) scrollToBottom();
             
             markVisibleMessagesAsRead();
             
-            // If new messages arrived for the current user while they are in the room, reset the count.
             if (newMessagesForCurrentUser) {
                 db.collection('users').doc(currentUser.uid).collection('rooms').doc(roomId).set({ unreadCount: 0 }, { merge: true }).catch(console.error);
             }
         });
     }
-    function createMessageElement(docId, msg) {
+    
+    function renderPoll(pollData, messageId) {
+       const totalVotes = Object.values(pollData.options).reduce((sum, option) => sum + option.votes.length, 0);
+
+       const optionsHtml = Object.entries(pollData.options).map(([optionText, optionData]) => {
+           const voteCount = optionData.votes.length;
+           const percentage = totalVotes > 0 ? (voteCount / totalVotes) * 100 : 0;
+           const isVotedByMe = optionData.votes.includes(currentUser.uid);
+           const escapedOptionText = optionText.replace(/'/g, "\\'");
+           
+           return `
+               <div class="poll-option ${isVotedByMe ? 'voted-by-me' : ''}" onclick="window.handleVote('${messageId}', '${escapedOptionText}')" role="button" tabindex="0">
+                   <div class="poll-option-bar" style="width: ${percentage}%;"></div>
+                   <div class="poll-option-content">
+                       <span class="poll-option-text">${optionText}</span>
+                       <span class="poll-option-votes">${voteCount}</span>
+                   </div>
+               </div>
+           `;
+       }).join('');
+
+       return `
+            <div class="poll-container">
+                <p class="poll-question">${pollData.question}</p>
+                <div class="poll-options">${optionsHtml}</div>
+                <div class="poll-footer">${totalVotes} total votes</div>
+            </div>
+        `;
+    }
+    
+    async function handleVote(messageId, optionText) {
+        const messageRef = db.collection('chatrooms').doc(currentRoomId).collection('messages').doc(messageId);
+        
+        await db.runTransaction(async (transaction) => {
+            const messageDoc = await transaction.get(messageRef);
+            if (!messageDoc.exists) {
+                throw "Message does not exist!";
+            }
+            
+            const pollData = messageDoc.data();
+            const newOptions = { ...pollData.options };
+
+            // Remove previous vote if any
+            for (const key in newOptions) {
+                const index = newOptions[key].votes.indexOf(currentUser.uid);
+                if (index > -1) {
+                    newOptions[key].votes.splice(index, 1);
+                }
+            }
+
+            // Add new vote
+            if (newOptions[optionText]) {
+                 if (!newOptions[optionText].votes.includes(currentUser.uid)) {
+                    newOptions[optionText].votes.push(currentUser.uid);
+                }
+            }
+            
+            transaction.update(messageRef, { options: newOptions });
+        });
+    }
+
+    function createMessageElement(docId, msg, isContinuation) {
         const msgDate = msg.timestamp?.toDate();
         const isSent = msg.senderId === currentUser.uid;
         const wrapper = document.createElement('div');
         wrapper.className = `message-wrapper ${isSent ? 'sent' : 'received'}`;
+        if (isContinuation) {
+            wrapper.classList.add('is-continuation');
+        }
+
         const roomData = roomsDataCache.find(r => r.id === currentRoomId);
-        if (roomData && roomData.type === 'group' && !isSent) {
+        if (roomData && roomData.type === 'group' && !isSent && !isContinuation) {
             wrapper.innerHTML += `<div class="sender-name">${msg.senderName || 'Anonymous'}</div>`;
         }
         let contentHTML = '';
         if (msg.forwardedFrom) contentHTML += `<div class="forwarded-info">↪️ Forwarded message</div>`;
         if (msg.replyTo) contentHTML += `<div class="reply-context" onclick="window.scrollToMessage('${msg.replyTo.messageId}')"><strong>${msg.replyTo.senderName}</strong><p>${msg.replyTo.text}</p></div>`;
-        if (msg.base64Image) contentHTML += `<img src="${msg.base64Image}" class="message-image" alt="Image">`;
-        else if (msg.file) {
+        
+        if (msg.base64Image) {
+            contentHTML += `<img src="${msg.base64Image}" class="message-image" alt="Image" data-sender-name="${msg.senderName}" data-timestamp="${msgDate?.toLocaleString() || ''}">`;
+        } else if (msg.voiceMessage) {
+            const playIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M8 5v14l11-7z"/></svg>`;
+            contentHTML += `<div class="voice-message-player">
+                <button class="voice-play-btn" aria-label="Play voice message">${playIcon}</button>
+                <div class="voice-progress-container"><div class="voice-progress-bar"></div></div>
+                <span class="voice-duration">${(msg.voiceMessage.duration / 1000).toFixed(1)}s</span>
+            </div>`;
+        } else if (msg.file) {
             contentHTML += `<a href="${msg.file.dataUrl}" download="${msg.file.name}" class="file-link" target="_blank" rel="noopener noreferrer">
                 <div style="display: flex; align-items: center; gap: 8px;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-text"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/></svg>
@@ -834,12 +1028,26 @@ const firebaseConfig = {
                     </div>
                 </div>
             </a>`;
+        } else if (msg.type === 'poll') {
+             contentHTML += renderPoll(msg, docId);
         }
-        else if (msg.text) contentHTML += `<p class="message-text">${msg.text.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>`;
+        if (msg.text) contentHTML += `<p class="message-text">${msg.text.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>`;
+        
+        if (msg.linkPreview) {
+            contentHTML += `<a href="${msg.linkPreview.url}" target="_blank" rel="noopener noreferrer" class="link-preview">
+                ${msg.linkPreview.image ? `<img src="${msg.linkPreview.image}" class="link-preview-image" alt="Link preview image">` : ''}
+                <div class="link-preview-details">
+                    <div class="link-preview-sitename">${msg.linkPreview.siteName || ''}</div>
+                    <div class="link-preview-title">${msg.linkPreview.title || ''}</div>
+                    <div class="link-preview-description">${msg.linkPreview.description || ''}</div>
+                </div>
+            </a>`;
+        }
+        
         const canEdit = isSent && msg.text;
         const canDelete = isSent || currentUserRole === 'admin';
         const canPin = currentUserRole === 'admin';
-        const textForJs = (msg.text || (msg.base64Image ? 'Photo' : (msg.file ? `File: ${msg.file.name}` : 'File'))).replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        const textForJs = (msg.text || (msg.base64Image ? 'Photo' : (msg.file ? `File: ${msg.file.name}` : 'Message'))).replace(/'/g, "\\'").replace(/"/g, '&quot;');
         
         const reactIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" x2="9.01" y1="9" y2="9"/><line x1="15" x2="15.01" y1="9" y2="9"/></svg>`;
         const replyIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 0 0-4-4H4"/></svg>`;
@@ -851,20 +1059,21 @@ const firebaseConfig = {
         const messageDiv = document.createElement('div');
         messageDiv.id = docId;
         messageDiv.className = `message ${isSent ? 'sent' : 'received'}`;
+        if (msg.type === 'poll') messageDiv.classList.add('is-poll');
+
         messageDiv.dataset.text = msg.text || '';
+        if (msg.voiceMessage) messageDiv.dataset.voiceUrl = msg.voiceMessage.dataUrl;
         if (msg.file) messageDiv.dataset.file = msg.file.name;
         
         let receiptHTML = '';
         if (isSent) {
             if (docId.startsWith('temp_')) {
-                // Optimistic UI states
                 const isFailed = msg.status === 'failed';
                 const statusIcon = isFailed ? '&#x26A0;' : '🕒';
                 const statusClass = msg.status || 'sending';
                 const statusTitle = isFailed ? 'Failed to send' : (msg.status === 'queued' ? 'Queued' : 'Sending...');
                 receiptHTML = `<span class="read-receipt ${statusClass}" title="${statusTitle}">${statusIcon}</span>`;
             } else {
-                // Placeholder for real messages from Firestore, updateReceipts will style it
                 receiptHTML = `<span class="read-receipt"></span>`;
             }
         }
@@ -887,7 +1096,7 @@ const firebaseConfig = {
         wrapper.appendChild(messageDiv);
         
         if (!docId.startsWith('temp_') && isSent) {
-            updateMessage(docId, msg, messageDiv);
+            updateMessage(docId, msg, wrapper);
         }
 
         return wrapper;
@@ -901,20 +1110,53 @@ const firebaseConfig = {
             dom.chatMessages.appendChild(separator);
             lastMessageDate = msgDate;
         }
-        const wrapper = createMessageElement(docId, msg);
+
+        const lastMsgWrapper = dom.chatMessages.querySelector('.message-wrapper:last-of-type');
+        let isContinuation = false;
+
+        if (lastMsgWrapper && !lastMsgWrapper.classList.contains('date-separator')) {
+            const lastSender = lastMsgWrapper.dataset.senderId;
+            const lastTimestamp = parseInt(lastMsgWrapper.dataset.timestamp, 10);
+            const currentTimestamp = msg.timestamp?.toDate().getTime();
+
+            if (lastSender === msg.senderId && currentTimestamp && lastTimestamp) {
+                const timeDiffMinutes = (currentTimestamp - lastTimestamp) / (1000 * 60);
+                if (timeDiffMinutes < 5) {
+                    isContinuation = true;
+                    lastMsgWrapper.classList.add('has-continuation');
+                }
+            }
+        }
+
+        const wrapper = createMessageElement(docId, msg, isContinuation);
+        wrapper.dataset.senderId = msg.senderId;
+        if(msg.timestamp) {
+            wrapper.dataset.timestamp = msg.timestamp.toDate().getTime();
+        }
+
         lastSenderId = msg.senderId;
         const target = dom.chatMessages.querySelector('.typing-indicator') || null;
         dom.chatMessages.insertBefore(wrapper, target);
     }
-    function updateMessage(docId, msg, element = null) {
-        const el = element || document.getElementById(docId);
+    function updateMessage(docId, msg, wrapperEl = null) {
+        const wrapper = wrapperEl || document.getElementById(docId)?.closest('.message-wrapper');
+        if (!wrapper) return;
+        const el = wrapper.querySelector('.message');
         if (!el) return;
+
         if (msg.text) {
             const textEl = el.querySelector('.message-text');
             if (textEl && textEl.innerHTML !== msg.text) textEl.innerHTML = msg.text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
         }
+        if (msg.type === 'poll') {
+            const pollContainer = el.querySelector('.poll-container');
+            if (pollContainer) {
+                pollContainer.outerHTML = renderPoll(msg, docId);
+            }
+        }
+
         renderReactions(el, docId, msg.reactions || {});
-        updateReceipts(el, msg);
+        updateReceipts(wrapper, msg);
     }
     async function fetchMoreMessages() {
         if (!currentRoomId || isFetchingMessages || !lastVisibleMessage) return;
@@ -924,19 +1166,57 @@ const firebaseConfig = {
         dom.chatMessages.prepend(spinner);
         const oldScrollHeight = dom.chatMessages.scrollHeight;
         try {
-            const query = db.collection('chatrooms').doc(currentRoomId).collection('messages').orderBy('timestamp', 'desc').startAfter(lastVisibleMessage).limit(30);
+            const userRoomDoc = await db.collection('users').doc(currentUser.uid).collection('rooms').doc(currentRoomId).get();
+            const clearedAt = userRoomDoc.data()?.clearedAt;
+    
+            let query = db.collection('chatrooms').doc(currentRoomId).collection('messages').orderBy('timestamp', 'desc');
+    
+            if (clearedAt) {
+                query = query.where('timestamp', '>', clearedAt);
+            }
+    
+            query = query.startAfter(lastVisibleMessage).limit(30);
+            
             const snapshot = await query.get();
-            if (snapshot.empty) { lastVisibleMessage = null; return; }
-            lastVisibleMessage = snapshot.docs[snapshot.docs.length - 1];
+            
+            // Remove spinner before adding messages
+            spinner.remove();
+            
+            if (snapshot.empty) { 
+                lastVisibleMessage = null; // No more messages to load
+                isFetchingMessages = false;
+                return; 
+            }
+            
+            lastVisibleMessage = snapshot.docs[snapshot.docs.length - 1]; // Oldest message in this batch is the new cursor
+            
+            let previousMessageDate = null;
+            const topMessage = dom.chatMessages.querySelector('.message-wrapper');
+            if(topMessage && topMessage.dataset.timestamp) {
+                 previousMessageDate = new Date(parseInt(topMessage.dataset.timestamp, 10));
+            }
+    
             snapshot.docs.reverse().forEach(doc => {
-                const messageElement = createMessageElement(doc.id, doc.data());
-                dom.chatMessages.insertBefore(messageElement, dom.chatMessages.children[1]);
+                 const msgData = doc.data();
+                 const msgDate = msgData.timestamp.toDate();
+    
+                if (previousMessageDate && msgDate.toDateString() !== previousMessageDate.toDateString()) {
+                    const separator = document.createElement('div');
+                    separator.className = 'date-separator';
+                    separator.textContent = getFormattedDate(previousMessageDate);
+                    dom.chatMessages.insertBefore(separator, topMessage);
+                }
+    
+                const messageElement = createMessageElement(doc.id, msgData);
+                dom.chatMessages.prepend(messageElement);
+                previousMessageDate = msgDate;
             });
+    
             dom.chatMessages.scrollTop = dom.chatMessages.scrollHeight - oldScrollHeight;
         } catch (error) {
             console.error("Error fetching more messages:", error);
-        } finally {
             spinner.remove();
+        } finally {
             isFetchingMessages = false;
         }
     }
@@ -944,10 +1224,20 @@ const firebaseConfig = {
         e.preventDefault();
         const text = dom.messageInput.value.trim();
         if (!text) return;
-        const content = { text };
+
+        const urlRegex = /(https?:\/\/[^\s]+)/g;
+        const foundUrl = text.match(urlRegex)?.[0];
+        let previewData = null;
+
+        if (foundUrl) {
+            previewData = await generateLinkPreview(foundUrl);
+        }
+
+        const content = { text, linkPreview: previewData };
         const replyContext = activeReply;
+
         dom.messageInput.value = '';
-        dom.sendButton.disabled = true;
+        dom.messageInput.dispatchEvent(new Event('input')); // Trigger UI update
         cancelReply();
         updateTypingStatus();
         attemptToSend(content, replyContext);
@@ -985,7 +1275,7 @@ const firebaseConfig = {
                     receipt.innerHTML = `&#x26A0;`;
                 }
                 const meta = failedMsgEl.querySelector('.message-meta');
-                if (!meta.querySelector('.retry-button')) {
+                if (meta && !meta.querySelector('.retry-button')) {
                     const retryBtn = document.createElement('button');
                     retryBtn.className = 'modal-button danger small retry-button';
                     retryBtn.textContent = 'Retry';
@@ -1010,12 +1300,16 @@ const firebaseConfig = {
             replyTo: replyContext,
             isEdited: false
         };
+        if (messageData.linkPreview === undefined) {
+            messageData.linkPreview = null;
+        }
+
         const roomRef = db.collection('chatrooms').doc(targetRoomId);
         const batch = db.batch();
         const messageRef = roomRef.collection('messages').doc();
         batch.set(messageRef, messageData);
         batch.update(roomRef, {
-            lastMessage: { text: content.text || (content.base64Image ? '📷 Photo' : (content.file ? `📄 ${content.file.name}` : '')), timestamp: messageData.timestamp }
+            lastMessage: { text: content.text || (content.base64Image ? '📷 Photo' : (content.voiceMessage ? '🎤 Voice Message' : (content.file ? `📄 ${content.file.name}` : (content.type === 'poll' ? '📊 Poll' : '')))), timestamp: messageData.timestamp }
         });
 
         const roomData = roomsDataCache.find(r => r.id === targetRoomId);
@@ -1065,10 +1359,23 @@ const firebaseConfig = {
             await ref.update({ [updateField]: firebase.firestore.FieldValue.arrayUnion(currentUser.uid) });
         }
     }
-    function updateReceipts(msgEl, msgData) {
-        if (msgEl.id.startsWith('temp_') || msgData.senderId !== currentUser.uid) return;
-        const receipt = msgEl.querySelector('.read-receipt');
-        if (!receipt) return;
+    function updateReceipts(msgWrapper, msgData) {
+        if (msgWrapper.querySelector('.message').id.startsWith('temp_') || msgData.senderId !== currentUser.uid) return;
+    
+        const metaContainer = msgWrapper.querySelector('.message-meta');
+        if (!metaContainer) return;
+    
+        const existingReceipt = metaContainer.querySelector('.read-receipt');
+        const existingUnreadCount = metaContainer.querySelector('.unread-count-indicator');
+        if (existingUnreadCount) existingUnreadCount.remove();
+        
+        if (existingReceipt) {
+            existingReceipt.style.display = 'none';
+            existingReceipt.className = 'read-receipt';
+            existingReceipt.innerHTML = '';
+            existingReceipt.onmouseenter = null;
+            existingReceipt.onmouseleave = null;
+        }
     
         const room = roomsDataCache.find(r => r.id === currentRoomId);
         if (!room || !room.participantIds) return;
@@ -1076,22 +1383,34 @@ const firebaseConfig = {
         const total = room.participantIds.length;
         const readCount = msgData.readBy?.length || 0;
     
-        let statusClass, statusTitle;
+        if (room.type === 'group' && total > 2) {
+            const unreadCount = total - readCount;
     
-        if (total > 0 && readCount >= total) {
-            statusClass = 'receipt-read';
-            statusTitle = 'Read by everyone';
-        } else if (readCount > 1) { // Read by at least one other person
-            statusClass = 'receipt-delivered';
-            statusTitle = 'Delivered'; // Approximating delivery as "read by someone else"
-        } else { // readCount is 1 (only the sender)
-            statusClass = 'receipt-sent';
-            statusTitle = 'Sent';
+            if (unreadCount > 0) {
+                const unreadIndicator = document.createElement('span');
+                unreadIndicator.className = 'unread-count-indicator interactive';
+                unreadIndicator.textContent = unreadCount;
+                unreadIndicator.title = `Unread by ${unreadCount} people`;
+                unreadIndicator.onmouseenter = (e) => showReadByPopover(e, msgData.readBy, true);
+                unreadIndicator.onmouseleave = hideReadByPopover;
+                metaContainer.insertBefore(unreadIndicator, metaContainer.querySelector('.message-timestamp'));
+            } else {
+                if (existingReceipt) {
+                    existingReceipt.style.display = 'inline-block';
+                    existingReceipt.className = 'read-receipt receipt-read interactive';
+                    existingReceipt.title = 'Read by everyone';
+                    existingReceipt.onmouseenter = (e) => showReadByPopover(e, msgData.readBy, false);
+                    existingReceipt.onmouseleave = hideReadByPopover;
+                }
+            }
+        } else {
+            if (existingReceipt) {
+                existingReceipt.style.display = 'inline-block';
+                const isRead = readCount >= total;
+                existingReceipt.className = isRead ? 'read-receipt receipt-read' : 'read-receipt receipt-sent';
+                existingReceipt.title = isRead ? 'Read' : 'Sent';
+            }
         }
-    
-        receipt.className = `read-receipt ${statusClass}`;
-        receipt.title = statusTitle;
-        receipt.innerHTML = ''; // Clear optimistic UI icons like the clock
     }
     async function markVisibleMessagesAsRead() {
         if (!currentRoomId || document.hidden) return;
@@ -1106,8 +1425,6 @@ const firebaseConfig = {
         unread.forEach(msgDiv => {
             const msgRect = msgDiv.getBoundingClientRect();
             
-            // Check for vertical intersection between the message and the chat container.
-            // This is more reliable than checking against the whole window.
             const isVisible = (
                 msgRect.top <= containerRect.bottom &&
                 msgRect.bottom >= containerRect.top
@@ -1307,6 +1624,35 @@ const firebaseConfig = {
     }
 
     // --- ROOM MANAGEMENT ---
+    async function handleClearChat() {
+        if (!currentRoomId) return;
+    
+        const confirmed = await showConfirmationModal(
+            "Clear My Chat History",
+            "This will permanently delete your copy of the message history in this chat. Other participants' history will not be affected. Are you sure?"
+        );
+    
+        if (confirmed) {
+            try {
+                const userRoomRef = db.collection('users').doc(currentUser.uid).collection('rooms').doc(currentRoomId);
+                await userRoomRef.set({
+                    clearedAt: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+                
+                dom.chatMessages.innerHTML = '';
+                lastVisibleMessage = null;
+                lastMessageDate = null;
+                if (messagesUnsubscribe) messagesUnsubscribe();
+                listenForMessages(currentRoomId);
+                
+                hideModal(dom.participantModal);
+    
+            } catch (error) {
+                console.error("Error clearing chat history:", error);
+                showCustomAlert("Error", "Failed to clear chat history.");
+            }
+        }
+    }
     async function createNewGroupRoom() {
         try {
             const roomName = await showCustomPrompt('Create New Group Chat', 'Enter a name for your group chat.', 'Group Chat Name', 'Next');
@@ -1455,7 +1801,6 @@ const firebaseConfig = {
             showCustomAlert("Error", `Failed to start chat: ${error.message}`);
         }
     }
-
     async function showRoomInfo() {
         const roomData = roomsDataCache.find(r => r.id === currentRoomId);
         if (!roomData) return;
@@ -1486,7 +1831,7 @@ const firebaseConfig = {
                 item.dataset.userName = name;
                 item.dataset.role = isAdmin ? 'admin' : 'member';
                 item.dataset.blocked = isBlocked;
-                item.innerHTML = `<div class="participant-info" data-action="view-profile">
+                item.innerHTML = `<div class="participant-info" data-action="view-profile" role="button" tabindex="0">
                         <span class="online-status" title="Offline"></span>
                         <span class="participant-name">${name}</span>
                         ${id === currentUser.uid ? '<span class="self-badge">You</span>' : ''}
@@ -1601,17 +1946,12 @@ const firebaseConfig = {
         const batch = db.batch();
         const roomRef = db.collection('chatrooms').doc(currentRoomId);
         
-        // Remove from room participants
         batch.update(roomRef, {
             participantIds: firebase.firestore.FieldValue.arrayRemove(userId),
             [`participantNames.${userId}`]: firebase.firestore.FieldValue.delete(),
             [`participantAvatars.${userId}`]: firebase.firestore.FieldValue.delete()
         });
-        
-        // Remove from members subcollection
         batch.delete(roomRef.collection('members').doc(userId));
-        
-        // Remove room reference from user's private list
         batch.delete(db.collection('users').doc(userId).collection('rooms').doc(currentRoomId));
     
         await batch.commit();
@@ -1628,32 +1968,35 @@ const firebaseConfig = {
             const userDoc = await db.collection('users').doc(userId).get();
             if (!userDoc.exists) return showCustomAlert("Error", "Could not find user information.");
             const userData = userDoc.data();
+
+            const presenceDoc = await db.collection('presence').doc(userId).get();
+            const lastSeenText = presenceDoc.exists ? formatLastSeen(presenceDoc.data().lastActiveAt) : 'Last seen: Unknown';
+
             dom.userProfileModalTitle.textContent = isCurrentUser ? "My Profile" : "Profile Information";
             dom.userProfileId.textContent = userId;
             dom.profileModalFooter.style.display = isCurrentUser ? 'flex' : 'none';
             if (isCurrentUser) {
                 dom.profileModalFooter.querySelector('#profile-logout-btn').onclick = () => auth.signOut();
             }
-            toggleProfileEditMode(false, userData); // Initial render in view mode
+            toggleProfileEditMode(false, userData, lastSeenText);
             showModal(dom.userProfileModal);
         } catch (error) {
             console.error("Error showing user profile:", error);
         }
     }
-    function toggleProfileEditMode(isEditing, data = currentUserProfileData) {
+    function toggleProfileEditMode(isEditing, data = currentUserProfileData, lastSeen = 'Online') {
         const v = (el) => el.style.display = isEditing ? 'none' : 'block';
         const e = (el) => el.style.display = isEditing ? 'block' : 'none';
     
-        // Always update view fields with the latest data
         dom.userProfilePhoto.src = data.photoUrl || PLACEHOLDER_IMAGE_100;
         dom.userProfileNameView.textContent = data.displayName || "No Name";
-        dom.userProfileStatusView.textContent = data.status || "Online";
+        dom.userProfileStatusView.textContent = data.isGuest ? "Guest User" : lastSeen;
+        dom.userProfileCustomStatusView.textContent = data.status || "";
         dom.userProfileEmailView.textContent = data.isGuest ? "Guest User" : (data.email || "No Email");
         dom.userProfilePhoneView.textContent = data.phone || "Not provided";
     
-        // Toggle visibility of elements
         v(dom.userProfileNameView); e(dom.userProfileNameEdit);
-        v(dom.userProfileStatusView); e(dom.userProfileStatusEdit);
+        v(dom.userProfileCustomStatusView); e(dom.userProfileStatusEdit);
         v(dom.userProfileEmailView); e(dom.userProfileEmailEdit);
         v(dom.userProfilePhoneView); e(dom.userProfilePhoneEdit);
         e(dom.profilePhotoEditOverlay);
@@ -1663,12 +2006,11 @@ const firebaseConfig = {
         dom.userProfileEditBtn.style.display = isEditing || !isOwnProfile || data.isGuest ? 'none' : 'inline-flex';
 
         if (isEditing) {
-            // Populate edit fields if we are entering edit mode
             dom.userProfileNameEdit.value = data.displayName || '';
-            dom.userProfileStatusEdit.value = data.status || 'Online';
+            dom.userProfileStatusEdit.value = data.status || '';
             dom.userProfileEmailEdit.value = data.email || '';
             dom.userProfilePhoneEdit.value = data.phone || '';
-            dom.profilePhotoInput.value = ''; // Clear file input
+            dom.profilePhotoInput.value = '';
         }
     }
     async function saveUserProfile(e) {
@@ -1698,16 +2040,11 @@ const firebaseConfig = {
             const nameChanged = currentUserProfileData.displayName !== newName;
             const photoChanged = currentUserProfileData.photoUrl !== newPhotoUrl;
             
-            // This is the logic migrated from the onUserUpdate Cloud Function.
-            // It attempts to propagate profile changes from the client.
-            // Note: This is less reliable than a backend function. If the user
-            // closes their browser mid-update, some rooms might not be updated.
             const batch = db.batch();
     
             batch.update(db.collection('users').doc(currentUser.uid), updateData);
             
             if (nameChanged || photoChanged) {
-                console.log("Profile changed. Propagating updates to chatrooms...");
                 const userRoomsSnapshot = await db.collection('users').doc(currentUser.uid).collection('rooms').get();
                 if (!userRoomsSnapshot.empty) {
                     const propagationUpdate = {};
@@ -1718,7 +2055,6 @@ const firebaseConfig = {
                         const roomRef = db.collection('chatrooms').doc(doc.id);
                         batch.update(roomRef, propagationUpdate);
                     });
-                     console.log(`Queueing updates for ${userRoomsSnapshot.size} rooms.`);
                 }
             }
             
@@ -1748,7 +2084,83 @@ const firebaseConfig = {
         showCustomAlert('Success', 'User has been unblocked. You may need to re-enter the chat to see their messages.');
         hideModal(dom.participantModal);
     }
+    function showReadByPopover(event, readByList, showUnread = false) {
+        clearTimeout(hidePopoverTimeout);
+        if (readByPopover) readByPopover.remove();
+    
+        readByPopover = document.createElement('div');
+        readByPopover.className = 'read-by-popover';
+    
+        const roomData = roomsDataCache.find(r => r.id === currentRoomId);
+        if (!roomData) return;
+    
+        if (showUnread) {
+            const unreadUserIds = roomData.participantIds.filter(id => !readByList.includes(id));
+            const unreadUserNames = unreadUserIds.map(id => roomData.participantNames[id] || 'Unknown User');
+            
+            readByPopover.innerHTML = `<h4>Unread By</h4>`;
+            if (unreadUserNames.length > 0) {
+                const list = document.createElement('ul');
+                unreadUserNames.forEach(name => {
+                    const item = document.createElement('li');
+                    item.textContent = name;
+                    list.appendChild(item);
+                });
+                readByPopover.appendChild(list);
+            } else {
+                readByPopover.innerHTML += `<p>Everyone has read this message.</p>`;
+            }
+        } else {
+            const readerNames = readByList
+                .filter(id => id !== currentUser.uid)
+                .map(id => roomData.participantNames[id] || 'Unknown User');
+    
+            readByPopover.innerHTML = `<h4>Read By</h4>`;
+            if (readerNames.length > 0) {
+                const list = document.createElement('ul');
+                readerNames.forEach(name => {
+                    const item = document.createElement('li');
+                    item.textContent = name;
+                    list.appendChild(item);
+                });
+                readByPopover.appendChild(list);
+            } else {
+                readByPopover.innerHTML += `<p>No one else has read this yet.</p>`;
+            }
+        }
+        
+        document.body.appendChild(readByPopover);
+    
+        const targetRect = event.target.getBoundingClientRect();
+        const popoverRect = readByPopover.getBoundingClientRect();
+    
+        let top = targetRect.top - popoverRect.height - 5;
+        if (top < 5) {
+            top = targetRect.bottom + 5;
+        }
+    
+        let left = targetRect.left + (targetRect.width / 2) - (popoverRect.width / 2);
+        if (left < 5) left = 5;
+        if (left + popoverRect.width > window.innerWidth) {
+            left = window.innerWidth - popoverRect.width - 5;
+        }
+        
+        readByPopover.style.left = `${left}px`;
+        readByPopover.style.top = `${top}px`;
+    
+        readByPopover.addEventListener('mouseenter', () => clearTimeout(hidePopoverTimeout));
+        readByPopover.addEventListener('mouseleave', hideReadByPopover);
+    }
 
+    function hideReadByPopover() {
+        hidePopoverTimeout = setTimeout(() => {
+            if (readByPopover) {
+                readByPopover.remove();
+                readByPopover = null;
+            }
+        }, 200);
+    }
+    
     // --- ADMIN & INVITATIONS PANELS ---
     function listenForAdminUpdates() {
         if (adminRequestsUnsubscribe) adminRequestsUnsubscribe();
@@ -1869,8 +2281,6 @@ const firebaseConfig = {
         const invitationRef = db.collection('invitations').doc(invitationId);
         try {
             if (accepted) {
-                // This logic is migrated from the onInvitationAccepted Cloud Function.
-                // It performs all database updates in a single batch from the client.
                 const invitationDoc = await invitationRef.get();
                 if (!invitationDoc.exists) throw new Error("Invitation not found or has been revoked.");
                 
@@ -1883,20 +2293,13 @@ const firebaseConfig = {
                 
                 const batch = db.batch();
                 
-                // 1. Add user to the chatroom's participant list and metadata
                 batch.update(roomRef, {
                     participantIds: firebase.firestore.FieldValue.arrayUnion(userId),
                     [`participantNames.${userId}`]: currentUserProfileData.displayName,
                     [`participantAvatars.${userId}`]: currentUserProfileData.photoUrl || null,
                 });
-                
-                // 2. Add a reference to the room in the user's private subcollection
                 batch.set(userRoomsRef, { joinedAt: firebase.firestore.FieldValue.serverTimestamp() });
-                
-                // 3. Create a member document for the user in the room
                 batch.set(memberRef, { role: "member", joinedAt: firebase.firestore.FieldValue.serverTimestamp(), userId: userId });
-                
-                // 4. Update the invitation status to 'accepted'
                 batch.update(invitationRef, { status: 'accepted' });
     
                 await batch.commit();
@@ -2183,7 +2586,7 @@ const firebaseConfig = {
     }
     function handleChatScroll() {
         markVisibleMessagesAsRead();
-        if (dom.chatMessages.scrollTop === 0 && !isFetchingMessages && lastVisibleMessage) {
+        if (dom.chatMessages.scrollTop < 50 && !isFetchingMessages && lastVisibleMessage) {
             fetchMoreMessages();
         }
     }
@@ -2258,30 +2661,103 @@ const firebaseConfig = {
         yesterday.setDate(yesterday.getDate() - 1);
         if (date.toDateString() === today.toDateString()) return 'Today';
         if (date.toDateString() === yesterday.toDateString()) return 'Yesterday';
-        return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+        return date.toLocaleString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
     }
     function scrollToBottom() { 
         if(dom.chatMessages) dom.chatMessages.scrollTop = dom.chatMessages.scrollHeight; 
     }
 
-    // --- EMOJI PICKER ---
+    // --- PICKERS (EMOJI, STICKER, GIF) ---
+    function togglePicker(pickerElement) {
+        // Hide all pickers first
+        [dom.emojiPicker].forEach(p => {
+            if (p !== pickerElement) p.style.display = 'none';
+        });
+
+        // Toggle the target picker
+        if (pickerElement) {
+            const isVisible = pickerElement.style.display !== 'none';
+            pickerElement.style.display = isVisible ? 'none' : 'grid';
+            activePicker = isVisible ? null : pickerElement;
+        } else {
+            activePicker = null;
+        }
+    }
+
     function setupEmojiPicker() {
         const emojis = ['😀', '😂', '❤️', '👍', '🙏', '😊', '😍', '🤔', '🎉', '🔥', '💯', '😭', '😮', '😎', '😴', '🙄', '👋', '🥳', '🤯', '😱', '😇', '😈', '👻', '💀', '👽', '🤖', '👾', '🚀', '✨', '🌟', '💫', '💥'];
+        if (!dom.emojiPicker) return;
         dom.emojiPicker.innerHTML = emojis.map(emoji => `<span>${emoji}</span>`).join('');
         
         dom.emojiBtn.addEventListener('click', (e) => {
             e.stopPropagation();
-            dom.emojiPicker.style.display = dom.emojiPicker.style.display === 'grid' ? 'none' : 'grid';
+            togglePicker(dom.emojiPicker);
         });
 
         dom.emojiPicker.addEventListener('click', (e) => {
             if (e.target.tagName === 'SPAN') {
                 insertTextAtCursor(dom.messageInput, e.target.textContent);
-                dom.emojiPicker.style.display = 'none';
-                dom.sendButton.disabled = dom.messageInput.value.trim() === '';
+                togglePicker(null);
+                dom.messageInput.dispatchEvent(new Event('input'));
             }
         });
     }
+
+    // --- POLLS ---
+    function setupPollCreator() {
+        dom.pollBtn.addEventListener('click', () => {
+            dom.createPollForm.reset();
+            dom.pollOptionsContainer.innerHTML = `
+                <input type="text" class="poll-option-input" placeholder="선택지 1" required>
+                <input type="text" class="poll-option-input" placeholder="선택지 2" required>
+            `;
+            showModal(dom.createPollModal);
+        });
+
+        dom.addPollOptionBtn.addEventListener('click', () => {
+            if (dom.pollOptionsContainer.children.length < 10) {
+                const newOption = document.createElement('input');
+                newOption.type = 'text';
+                newOption.className = 'poll-option-input';
+                newOption.placeholder = `선택지 ${dom.pollOptionsContainer.children.length + 1}`;
+                newOption.required = true;
+                dom.pollOptionsContainer.appendChild(newOption);
+            } else {
+                showCustomAlert("Limit Reached", "You can add a maximum of 10 options.");
+            }
+        });
+
+        dom.createPollForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const question = document.getElementById('poll-question').value.trim();
+            const options = {};
+            const optionInputs = dom.pollOptionsContainer.querySelectorAll('.poll-option-input');
+            
+            optionInputs.forEach(input => {
+                const optionText = input.value.trim();
+                if (optionText) {
+                    options[optionText] = { votes: [] };
+                }
+            });
+
+            if (question && Object.keys(options).length >= 2) {
+                const pollContent = {
+                    type: 'poll',
+                    text: `📊 Poll: ${question}`, // For lastMessage preview
+                    question,
+                    options,
+                    createdBy: currentUser.uid
+                };
+                attemptToSend(pollContent, activeReply);
+                hideModal(dom.createPollModal);
+            } else {
+                showCustomAlert("Invalid Poll", "Please provide a question and at least two options.");
+            }
+        });
+
+        dom.createPollModal.querySelector('#create-poll-cancel-btn').addEventListener('click', () => hideModal(dom.createPollModal));
+    }
+
 
     function insertTextAtCursor(input, text) {
         const start = input.selectionStart;
@@ -2292,9 +2768,204 @@ const firebaseConfig = {
         input.focus();
         input.setSelectionRange(start + text.length, start + text.length);
     }
+    
+    // --- LINK PREVIEW ---
+    async function generateLinkPreview(url) {
+        try {
+            const response = await fetch(url);
+            if (!response.ok || !response.headers.get('content-type')?.includes('text/html')) {
+                return null;
+            }
+            const html = await response.text();
+            const doc = new DOMParser().parseFromString(html, "text/html");
+
+            const getMeta = (prop) => doc.querySelector(`meta[property="${prop}"]`)?.getAttribute('content') || doc.querySelector(`meta[name="${prop}"]`)?.getAttribute('content');
+            
+            const title = getMeta('og:title') || doc.querySelector('title')?.textContent || '';
+            const description = getMeta('og:description') || getMeta('description') || '';
+            let image = getMeta('og:image') || '';
+            const siteName = getMeta('og:site_name') || url.split('/')[2];
+            
+            if (image && !image.startsWith('http')) {
+                image = new URL(image, url).href;
+            }
+
+            if (!title) return null;
+
+            return { url, title, description, image, siteName };
+        } catch (error) {
+            console.warn(`Could not fetch link preview for ${url}:`, error);
+            return null;
+        }
+    }
+    
+    // --- IMAGE LIGHTBOX ---
+    function openLightbox(clickedImg) {
+        lightboxGallery = Array.from(dom.chatMessages.querySelectorAll('.message-image'));
+        lightboxCurrentIndex = lightboxGallery.indexOf(clickedImg);
+        if (lightboxCurrentIndex === -1) return;
+        
+        updateLightboxContent();
+        showModal(dom.lightbox);
+        window.addEventListener('keydown', handleLightboxKeys);
+    }
+    function closeLightbox() {
+        hideModal(dom.lightbox);
+        window.removeEventListener('keydown', handleLightboxKeys);
+    }
+    function updateLightboxContent() {
+        if (lightboxCurrentIndex < 0 || lightboxCurrentIndex >= lightboxGallery.length) return;
+        
+        const currentImg = lightboxGallery[lightboxCurrentIndex];
+        dom.lightboxImage.src = currentImg.src;
+        dom.lightboxSender.textContent = currentImg.dataset.senderName;
+        dom.lightboxTimestamp.textContent = currentImg.dataset.timestamp;
+        dom.lightboxDownload.href = currentImg.src;
+        
+        dom.lightboxPrev.style.display = lightboxCurrentIndex > 0 ? 'flex' : 'none';
+        dom.lightboxNext.style.display = lightboxCurrentIndex < lightboxGallery.length - 1 ? 'flex' : 'none';
+    }
+    function showPrevImage() {
+        if (lightboxCurrentIndex > 0) {
+            lightboxCurrentIndex--;
+            updateLightboxContent();
+        }
+    }
+    function showNextImage() {
+        if (lightboxCurrentIndex < lightboxGallery.length - 1) {
+            lightboxCurrentIndex++;
+            updateLightboxContent();
+        }
+    }
+    function handleLightboxKeys(e) {
+        if (e.key === 'Escape') closeLightbox();
+        if (e.key === 'ArrowLeft') showPrevImage();
+        if (e.key === 'ArrowRight') showNextImage();
+    }
+
+    // --- VOICE MESSAGES ---
+    async function handleStartRecording(e) {
+        e.preventDefault();
+        if (isRecording) return;
+        
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            isRecording = true;
+            audioChunks = [];
+            mediaRecorder = new MediaRecorder(stream);
+            mediaRecorder.ondataavailable = event => audioChunks.push(event.data);
+            
+            let startTime = Date.now();
+            dom.recordingIndicator.style.display = 'flex';
+            dom.messageInput.style.display = 'none';
+
+            recordingInterval = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                dom.recordingTimer.textContent = `${Math.floor(elapsed / 60)}:${(elapsed % 60).toString().padStart(2, '0')}`;
+                if (elapsed >= 60) {
+                    handleStopRecording(e);
+                }
+            }, 1000);
+            
+            mediaRecorder.onstop = async () => {
+                stream.getTracks().forEach(track => track.stop());
+                clearInterval(recordingInterval);
+                dom.recordingIndicator.style.display = 'none';
+                dom.messageInput.style.display = 'block';
+
+                if (audioChunks.length === 0) return;
+
+                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                const duration = Date.now() - startTime;
+
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    const base64 = reader.result;
+                    if (base64.length > 900000) {
+                        showCustomAlert("Voice Message Too Long", "The recording is too long to be sent.");
+                        return;
+                    }
+                    attemptToSend({ voiceMessage: { dataUrl: base64, duration } }, activeReply);
+                };
+                reader.readAsDataURL(audioBlob);
+            };
+
+            mediaRecorder.start();
+
+            window.addEventListener('pointerup', handleStopRecording, { once: true });
+            window.addEventListener('pointermove', handleCancelRecording);
+
+        } catch (err) {
+            console.error("Error accessing microphone:", err);
+            showCustomAlert("Microphone Access Denied", "Please allow microphone access in your browser settings to send voice messages.");
+        }
+    }
+
+    function handleStopRecording(e) {
+        window.removeEventListener('pointermove', handleCancelRecording);
+        if (!isRecording || !mediaRecorder) return;
+        
+        const wasCancelled = e.target.id === 'recording-cancel-text';
+        if (mediaRecorder.state === "recording" && !wasCancelled) {
+            mediaRecorder.stop();
+        } else {
+            mediaRecorder.stream.getTracks().forEach(track => track.stop());
+            clearInterval(recordingInterval);
+            dom.recordingIndicator.style.display = 'none';
+            dom.messageInput.style.display = 'block';
+        }
+
+        isRecording = false;
+        mediaRecorder = null;
+    }
+
+    function handleCancelRecording(e) {
+        if (!isRecording) return;
+        const micButtonRect = dom.micButton.getBoundingClientRect();
+        if (e.clientX < micButtonRect.left - 50 || e.clientX > micButtonRect.right + 50 ||
+            e.clientY < micButtonRect.top - 50 || e.clientY > micButtonRect.bottom + 50) {
+            dom.recordingTimer.textContent = 'Release to cancel';
+        } else {
+             dom.recordingTimer.textContent = 'Recording...';
+        }
+    }
+    
+    function toggleVoiceMessage(playBtn) {
+        const player = playBtn.closest('.voice-message-player');
+        const messageDiv = playBtn.closest('.message');
+        const dataUrl = messageDiv.dataset.voiceUrl;
+        
+        let audio = messageDiv.audio;
+        const pauseIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
+        const playIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M8 5v14l11-7z"/></svg>`;
+
+        if (!audio) {
+            audio = new Audio(dataUrl);
+            messageDiv.audio = audio;
+
+            audio.addEventListener('timeupdate', () => {
+                const progress = (audio.currentTime / audio.duration) * 100;
+                player.querySelector('.voice-progress-bar').style.width = `${progress}%`;
+            });
+            audio.addEventListener('ended', () => {
+                playBtn.innerHTML = playIcon;
+                playBtn.setAttribute('aria-label', 'Play voice message');
+                player.querySelector('.voice-progress-bar').style.width = '0%';
+            });
+        }
+
+        if (audio.paused) {
+            audio.play();
+            playBtn.innerHTML = pauseIcon;
+             playBtn.setAttribute('aria-label', 'Pause voice message');
+        } else {
+            audio.pause();
+            playBtn.innerHTML = playIcon;
+            playBtn.setAttribute('aria-label', 'Play voice message');
+        }
+    }
 
 
-    // ✅ THE FIX for Javascript Scope Errors
     // Attach functions that are called by HTML onclick attributes to the global window object.
     window.handleReaction = handleReaction;
     window.startReply = startReply;
@@ -2306,5 +2977,6 @@ const firebaseConfig = {
     window.scrollToMessage = scrollToMessage;
     window.handleJoinRequest = handleJoinRequest;
     window.handleInvitationResponse = handleInvitationResponse;
+    window.handleVote = handleVote;
 
 });
